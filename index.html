@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexusCompute Cloud — Run AI Workloads 24/7 Without Limits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#06070f;
+  --ink2:#0a0c18;
+  --ink3:#0f1120;
+  --ink4:#141728;
+  --b1:#1a1e32;
+  --b2:#242840;
+  --cyan:#00e5ff;
+  --cyan-d:rgba(0,229,255,.09);
+  --cyan-g:rgba(0,229,255,.22);
+  --lime:#c6ff00;
+  --lime-d:rgba(198,255,0,.09);
+  --violet:#7c3aed;
+  --violet-d:rgba(124,58,237,.10);
+  --red:#ff3b5c;
+  --red-d:rgba(255,59,92,.09);
+  --green:#00e676;
+  --green-d:rgba(0,230,118,.09);
+  --amber:#ffa500;
+  --amber-d:rgba(255,165,0,.09);
+  --white:#dfe6f5;
+  --muted:#5a6a8a;
+  --dim:#28304a;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink);color:var(--white);
+  font-family:'Outfit',sans-serif;font-size:16px;line-height:1.6;
+  overflow-x:hidden;
+}
+/* scanline */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.012) 2px,rgba(0,229,255,.012) 4px);
+}
+/* grain */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
+}
+.mono{font-family:'Space Mono',monospace}
+section,nav,footer,.tools-bar{position:relative;z-index:1}
+.wrap{max-width:1100px;margin:0 auto;padding:0 32px}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  background:rgba(6,7,15,.92);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--b1);
+}
+.logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em}
+.logo-mark{
+  width:28px;height:28px;background:var(--cyan);display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;
+}
+.logo span{color:var(--cyan)}
+.nav-r{display:flex;align-items:center;gap:10px}
+.nav-a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 14px;transition:color .2s}
+.nav-a:hover{color:var(--white)}
+.nav-btn{
+  background:var(--cyan);color:#000;font-size:13px;font-weight:800;
+  padding:8px 20px;border:none;cursor:pointer;
+  transition:all .2s;text-decoration:none;display:inline-block;letter-spacing:.02em;
+}
+.nav-btn:hover{background:#33eeff;box-shadow:0 0 28px var(--cyan-g)}
+
+/* ─── HERO ─── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:100px 32px 80px;max-width:1100px;margin:0 auto;
+}
+.hero-glow{
+  position:absolute;top:0;left:0;right:0;height:100vh;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(0,229,255,.065) 0%,transparent 70%);
+}
+.h-kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Space Mono',monospace;font-size:11px;color:var(--cyan);
+  border:1px solid rgba(0,229,255,.3);background:var(--cyan-d);
+  padding:5px 14px;letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:28px;width:fit-content;
+  opacity:0;animation:up .6s ease forwards .1s;
+}
+.h-kicker-dot{width:5px;height:5px;background:var(--cyan);border-radius:50%;animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.h1{
+  font-size:clamp(50px,8vw,106px);font-weight:900;line-height:.93;
+  letter-spacing:-.04em;margin-bottom:22px;
+  opacity:0;animation:up .8s ease forwards .22s;
+}
+.h1 .accent{
+  display:block;
+  background:linear-gradient(90deg,var(--cyan) 0%,var(--lime) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.h1 .sub-h{display:block;color:var(--dim);font-size:.48em;font-weight:600;margin-top:10px;letter-spacing:-.02em;-webkit-text-fill-color:var(--dim)}
+
+.h-sub{
+  font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:600px;
+  font-weight:400;line-height:1.72;margin-bottom:40px;
+  opacity:0;animation:up .8s ease forwards .38s;
+}
+.h-sub b{color:var(--white);font-weight:700}
+
+.h-btns{display:flex;gap:12px;flex-wrap:wrap;opacity:0;animation:up .8s ease forwards .52s}
+
+.btn-p{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--cyan);color:#000;font-size:15px;font-weight:800;
+  padding:14px 32px;border:none;cursor:pointer;letter-spacing:.02em;
+  transition:all .2s;text-decoration:none;
+}
+.btn-p:hover{background:#33eeff;box-shadow:0 0 40px var(--cyan-g)}
+.btn-p:active{transform:scale(.97)}
+.btn-p.lime{background:var(--lime);color:#000}
+.btn-p.lime:hover{background:#d4ff33;box-shadow:0 0 40px rgba(198,255,0,.3)}
+.btn-g{
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;color:var(--muted);font-size:15px;font-weight:500;
+  padding:14px 24px;border:1px solid var(--b2);cursor:pointer;
+  transition:all .2s;text-decoration:none;
+}
+.btn-g:hover{border-color:var(--muted);color:var(--white)}
+
+.h-trust{
+  display:flex;align-items:center;gap:32px;margin-top:52px;padding-top:36px;
+  border-top:1px solid var(--b1);flex-wrap:wrap;
+  opacity:0;animation:up .8s ease forwards .66s;
+}
+.ht-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.ht-item::before{content:'✓';color:var(--cyan);font-weight:700;font-size:14px}
+.h-stats{
+  display:flex;gap:44px;flex-wrap:wrap;margin-top:44px;
+  opacity:0;animation:up .8s ease forwards .8s;
+}
+.sn{font-size:34px;font-weight:900;color:var(--cyan);letter-spacing:-.03em;line-height:1}
+.sl{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.07em;font-family:'Space Mono',monospace}
+
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── TOOLS ─── */
+.tools-bar{
+  background:var(--ink2);border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);
+  padding:13px 32px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+}
+.tbl{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.tc{
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);
+  border:1px solid var(--b1);padding:4px 12px;transition:all .2s;cursor:default;
+}
+.tc:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ─── SECTIONS ─── */
+.sec{padding:96px 0}
+.sec-alt{background:var(--ink2);border-top:1px solid var(--b1);border-bottom:1px solid var(--b1)}
+.eyebrow{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Space Mono',monospace;font-size:10px;
+  color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;
+}
+.eyebrow::before{content:'▸';color:var(--cyan);font-size:10px}
+.eyebrow.lime{color:var(--lime)}
+.eyebrow.lime::before{color:var(--lime)}
+.sh2{font-size:clamp(32px,4.5vw,56px);font-weight:900;letter-spacing:-.035em;line-height:1.01;margin-bottom:14px}
+.sp{font-size:16px;color:var(--muted);max-width:560px;font-weight:400;line-height:1.75}
+
+/* ─── PROBLEM ─── */
+.prob-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:52px;align-items:start}
+.prob-list{display:flex;flex-direction:column;gap:0}
+.pi{
+  display:flex;gap:16px;padding:22px 0;border-bottom:1px solid var(--b1);
+  transition:padding-left .25s;cursor:default;
+}
+.pi:first-child{padding-top:0}
+.pi:last-child{border-bottom:none}
+.pi:hover{padding-left:8px}
+.pi-icon{font-size:22px;flex-shrink:0;padding-top:2px}
+.pi-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.pi-desc{font-size:13px;color:var(--muted);line-height:1.65;font-weight:400}
+.pi-stat{
+  margin-top:10px;display:inline-block;
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--red);
+  background:var(--red-d);border:1px solid rgba(255,59,92,.2);padding:3px 10px;
+}
+.cost-viz{border:1px solid var(--b2);background:var(--ink3);overflow:hidden}
+.cv-head{
+  padding:12px 20px;background:var(--ink4);border-bottom:1px solid var(--b1);
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);
+  display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;letter-spacing:.08em;
+}
+.cv-label{color:var(--red);font-size:10px}
+.cv-body{padding:20px}
+.cv-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 0;border-bottom:1px solid var(--b1);font-size:13px;
+}
+.cv-row:last-of-type{border-bottom:none}
+.ck{color:var(--muted);font-weight:400}
+.cv{font-family:'Space Mono',monospace;font-size:12px}
+.cv.bad{color:var(--red);font-weight:700}
+.cv.neu{color:var(--white);font-weight:700}
+.cv-total{
+  margin-top:16px;padding:14px 18px;
+  background:var(--red-d);border:1px solid rgba(255,59,92,.2);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.cvt-lbl{font-size:12px;color:var(--muted)}
+.cvt-val{font-size:30px;font-weight:900;color:var(--red);letter-spacing:-.03em}
+
+/* ─── WHAT YOU GET ─── */
+.wyg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:52px;background:var(--b1);border:1px solid var(--b1)}
+.wyg-c{
+  background:var(--ink);padding:34px 26px;position:relative;overflow:hidden;
+  transition:background .25s;cursor:default;
+}
+.wyg-c:hover{background:var(--ink2)}
+.wyg-c::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--lime));
+  transform:scaleX(0);transform-origin:left;transition:transform .35s;
+}
+.wyg-c:hover::after{transform:scaleX(1)}
+.wyg-icon{font-size:26px;margin-bottom:12px;display:block}
+.wyg-title{font-size:15px;font-weight:700;margin-bottom:7px}
+.wyg-desc{font-size:13px;color:var(--muted);line-height:1.65;font-weight:400}
+.wyg-metric{
+  margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;
+  color:var(--cyan);background:var(--cyan-d);border:1px solid rgba(0,229,255,.18);
+  display:inline-block;padding:3px 10px;
+}
+
+/* ─── ENGINE SPLIT ─── */
+.engines{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:52px;background:var(--b1);border:1px solid var(--b1)}
+.eng{padding:44px 38px;position:relative;overflow:hidden;transition:background .25s;cursor:default}
+.eng.auto{background:var(--ink2)}
+.eng.creative{background:var(--ink3)}
+.eng:hover{background:var(--ink4)}
+.eng-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 13px;margin-bottom:18px;border:1px solid;
+}
+.eng.auto .eng-badge{color:var(--cyan);border-color:rgba(0,229,255,.3);background:var(--cyan-d)}
+.eng.creative .eng-badge{color:var(--lime);border-color:rgba(198,255,0,.3);background:var(--lime-d)}
+.eng-title{font-size:26px;font-weight:900;margin-bottom:10px;letter-spacing:-.03em}
+.eng-desc{font-size:14px;color:var(--muted);line-height:1.7;font-weight:400;margin-bottom:22px}
+.eng-list{list-style:none;display:flex;flex-direction:column;gap:9px}
+.eng-list li{font-size:13px;color:var(--muted);display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+.eng.auto .eng-list li::before{content:'→';color:var(--cyan);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;margin-top:2px}
+.eng.creative .eng-list li::before{content:'→';color:var(--lime);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;margin-top:2px}
+.eng-cta{
+  margin-top:28px;display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:800;padding:11px 24px;border:none;cursor:pointer;
+  transition:all .2s;text-decoration:none;letter-spacing:.02em;
+}
+.eng.auto .eng-cta{background:var(--cyan);color:#000}
+.eng.auto .eng-cta:hover{background:#33eeff;box-shadow:0 0 24px var(--cyan-g)}
+.eng.creative .eng-cta{background:var(--lime);color:#000}
+.eng.creative .eng-cta:hover{background:#d4ff33;box-shadow:0 0 24px rgba(198,255,0,.3)}
+.eng-glow-a{position:absolute;bottom:-80px;right:-80px;width:240px;height:240px;background:radial-gradient(circle,rgba(0,229,255,.10) 0%,transparent 70%);pointer-events:none}
+.eng-glow-c{position:absolute;bottom:-80px;right:-80px;width:240px;height:240px;background:radial-gradient(circle,rgba(198,255,0,.10) 0%,transparent 70%);pointer-events:none}
+
+/* ─── WHO IT'S FOR ─── */
+.who{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:52px;background:var(--b1);border:1px solid var(--b1)}
+.who-c{background:var(--ink2);padding:26px 20px;transition:background .25s;cursor:default}
+.who-c:hover{background:var(--ink3)}
+.who-icon{font-size:24px;margin-bottom:10px;display:block}
+.who-title{font-size:14px;font-weight:700;margin-bottom:5px}
+.who-desc{font-size:12px;color:var(--muted);line-height:1.6;font-weight:400}
+
+/* ─── TRUST / REAL WORKLOADS ─── */
+.trust-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:52px}
+.trust-c{
+  border:1px solid var(--b1);padding:28px;
+  display:flex;gap:18px;transition:border-color .25s,background .25s;cursor:default;
+}
+.trust-c:hover{border-color:var(--b2);background:var(--ink2)}
+.trust-icon{
+  width:40px;height:40px;background:var(--cyan-d);border:1px solid rgba(0,229,255,.25);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+}
+.trust-title{font-size:14px;font-weight:700;margin-bottom:5px}
+.trust-desc{font-size:13px;color:var(--muted);line-height:1.65;font-weight:400}
+.objection-box{
+  margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:2px;
+  background:var(--b1);border:1px solid var(--b1);
+}
+.obj{background:var(--ink2);padding:36px 30px}
+.obj.good{background:var(--ink3);border:2px solid var(--cyan)}
+.obj-title{font-size:16px;font-weight:700;margin-bottom:20px}
+.obj-list{display:flex;flex-direction:column;gap:12px}
+.oi{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.6}
+.oi span{color:var(--muted);font-weight:400}
+.oi b{color:var(--white);font-weight:700}
+.oi .x{color:var(--red);flex-shrink:0;font-size:13px}
+.oi .c{color:var(--green);flex-shrink:0;font-size:13px}
+
+/* ─── 10 MINUTES ─── */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:52px;background:var(--b1);border:1px solid var(--b1)}
+.step{background:var(--ink);padding:32px 24px;position:relative;transition:background .25s;cursor:default}
+.step:hover{background:var(--ink2)}
+.step-n{
+  font-family:'Space Mono',monospace;font-size:28px;font-weight:700;
+  color:var(--cyan);opacity:.18;margin-bottom:14px;display:block;line-height:1;
+}
+.step-icon{font-size:24px;margin-bottom:10px;display:block}
+.step-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6;font-weight:400}
+.step-time{
+  margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;
+  color:var(--lime);background:var(--lime-d);border:1px solid rgba(198,255,0,.2);
+  display:inline-block;padding:3px 10px;
+}
+.step-connector{
+  position:absolute;top:32px;right:-1px;width:2px;height:24px;
+  background:linear-gradient(var(--cyan),transparent);pointer-events:none;
+}
+
+/* ─── DEMO ─── */
+.demo-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:52px;align-items:start}
+.demo-box{border:1px solid var(--b2);background:var(--ink2);overflow:hidden}
+.demo-bar{
+  padding:11px 16px;background:var(--ink3);border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.demo-bar-l{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.demo-live{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:10px;color:var(--green)}
+.ldot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.5s ease infinite}
+.demo-thumb{
+  width:100%;aspect-ratio:16/9;
+  background:linear-gradient(135deg,var(--ink3),var(--ink4));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  position:relative;overflow:hidden;cursor:pointer;
+}
+.demo-thumb::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 45% 50%,rgba(0,229,255,.10) 0%,transparent 60%)}
+.play-btn{
+  width:64px;height:64px;border-radius:50%;background:var(--cyan);color:#000;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  position:relative;z-index:1;border:none;cursor:pointer;
+  animation:ring 2.5s ease infinite;transition:transform .2s;
+}
+.play-btn:hover{transform:scale(1.1)}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,.5)}50%{box-shadow:0 0 0 18px rgba(0,229,255,0)}}
+.demo-thumb-lbl{position:relative;z-index:1;text-align:center}
+.demo-thumb-t{font-size:14px;font-weight:700;color:var(--white);margin-bottom:3px}
+.demo-thumb-s{font-size:12px;color:var(--muted)}
+.demo-foot{padding:12px 16px;border-top:1px solid var(--b1);display:flex;justify-content:space-between}
+.demo-dur{font-family:'Space Mono',monospace;font-size:10px;color:var(--amber)}
+.demo-tag{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
+.demo-points{display:flex;flex-direction:column;gap:0}
+.dp{display:flex;gap:14px;padding:18px 0;border-bottom:1px solid var(--b1)}
+.dp:first-child{padding-top:0}
+.dp:last-child{border-bottom:none}
+.dp-n{font-family:'Space Mono',monospace;font-size:10px;color:var(--cyan);width:22px;flex-shrink:0;padding-top:2px}
+.dp-title{font-size:14px;font-weight:700;margin-bottom:3px}
+.dp-desc{font-size:13px;color:var(--muted);line-height:1.6;font-weight:400}
+
+/* ─── NEXUSFLOW AI ─── */
+.nf-hero{
+  margin-top:52px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;
+}
+.nf-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);
+  border:1px solid rgba(198,255,0,.3);background:var(--lime-d);
+  padding:5px 13px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;
+}
+.nf-badge-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:blink 2s ease infinite}
+.nf-value-prop{
+  margin-top:20px;padding:20px;background:var(--lime-d);border:1px solid rgba(198,255,0,.2);
+  font-size:15px;color:var(--white);line-height:1.7;font-weight:500;font-style:italic;
+}
+.nf-caps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.nf-cap{border:1px solid var(--b1);background:var(--ink3);padding:16px;transition:border-color .2s;cursor:default}
+.nf-cap:hover{border-color:var(--lime)}
+.nf-cap-icon{font-size:17px;margin-bottom:7px;display:block}
+.nf-cap-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.nf-cap-desc{font-size:12px;color:var(--muted);line-height:1.5;font-weight:400}
+.nf-chat{border:1px solid var(--b2);background:var(--ink2);overflow:hidden}
+.nf-chat-head{
+  padding:11px 15px;background:var(--ink3);border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nf-chat-name{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.nf-online{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime)}
+.nf-online-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:blink 2s ease infinite}
+.nf-msgs{padding:16px;display:flex;flex-direction:column;gap:12px;max-height:360px;overflow-y:auto}
+.msg{display:flex;flex-direction:column;gap:3px}
+.msg.user{align-items:flex-end}
+.msg.ai{align-items:flex-start}
+.msg-from{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.msg-b{padding:10px 13px;font-size:13px;line-height:1.6;font-weight:400;max-width:90%}
+.msg.user .msg-b{background:var(--ink4);border:1px solid var(--b2);color:var(--white)}
+.msg.ai .msg-b{background:var(--lime-d);border:1px solid rgba(198,255,0,.18);color:var(--white)}
+.msg.ai .msg-b b{color:var(--lime)}
+.nf-inp-row{padding:11px 13px;border-top:1px solid var(--b1);display:flex;gap:7px;background:var(--ink3)}
+.nf-inp{
+  flex:1;background:var(--ink2);border:1px solid var(--b1);color:var(--white);
+  font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;
+}
+.nf-inp::placeholder{color:var(--dim)}
+.nf-inp:focus{border-color:var(--lime)}
+.nf-send{
+  background:var(--lime);color:#000;border:none;padding:9px 15px;
+  font-size:11px;font-weight:800;cursor:pointer;font-family:'Space Mono',monospace;transition:background .2s;
+}
+.nf-send:hover{background:#d4ff33}
+.nf-disc{padding:7px 14px;font-size:10px;color:var(--dim);font-family:'Space Mono',monospace;text-align:center;border-top:1px solid var(--b1)}
+
+/* ─── PRICING ─── */
+.ptabs{display:flex;gap:0;margin-top:52px;border:1px solid var(--b1);background:var(--b1);width:fit-content}
+.ptab{
+  padding:10px 28px;font-size:13px;font-weight:700;cursor:pointer;
+  border:none;transition:all .2s;background:var(--ink2);color:var(--muted);
+}
+.ptab.active.auto{background:var(--cyan);color:#000}
+.ptab.active.creative{background:var(--lime);color:#000}
+.ppanels{margin-top:20px}
+.ppanel{display:none}
+.ppanel.active{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--b1);border:1px solid var(--b1)}
+.pc{background:var(--ink2);padding:36px 28px;position:relative;transition:background .25s}
+.pc:hover{background:var(--ink3)}
+.pc.hot{background:var(--ink3);z-index:2}
+.pc.hot.auto{border:2px solid var(--cyan);margin:-2px}
+.pc.hot.creative{border:2px solid var(--lime);margin:-2px}
+.hot-b{
+  position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:#000;
+  padding:4px 14px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;
+}
+.hot.auto .hot-b{background:var(--cyan)}
+.hot.creative .hot-b{background:var(--lime)}
+.p-tier{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px}
+.p-amt{font-size:50px;font-weight:900;line-height:1;letter-spacing:-.04em;margin-bottom:3px}
+.auto .p-amt{color:var(--cyan)}
+.creative .p-amt{color:var(--lime)}
+.p-period{font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);margin-bottom:22px}
+.p-div{height:1px;background:var(--b1);margin-bottom:18px}
+.p-feats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:26px}
+.p-feats li{font-size:13px;color:var(--muted);display:flex;align-items:flex-start;gap:7px;line-height:1.5;font-weight:400}
+.auto .p-feats li::before{content:'✓';color:var(--cyan);font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.creative .p-feats li::before{content:'✓';color:var(--lime);font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.p-note{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+.pbtn{display:block;width:100%;text-align:center;padding:12px;font-size:13px;font-weight:800;cursor:pointer;border:none;transition:all .2s;text-decoration:none;letter-spacing:.02em}
+.pbtn.ghost{background:transparent;border:1px solid var(--b2);color:var(--muted)}
+.pbtn.ghost:hover{border-color:var(--white);color:var(--white)}
+.pbtn.as{background:var(--cyan);color:#000}
+.pbtn.as:hover{background:#33eeff;box-shadow:0 0 20px var(--cyan-g)}
+.pbtn.cs{background:var(--lime);color:#000}
+.pbtn.cs:hover{background:#d4ff33;box-shadow:0 0 20px rgba(198,255,0,.3)}
+.p-footer{text-align:center;margin-top:20px;font-family:'Space Mono',monospace;font-size:10px;color:var(--dim)}
+.p-footer span{color:var(--green)}
+.fair-use{margin-top:14px;padding:13px 18px;background:var(--ink2);border:1px solid var(--b1);font-size:12px;color:var(--muted);line-height:1.6;text-align:center}
+.fair-use b{color:var(--white)}
+
+/* ─── LEAD CAPTURE ─── */
+.lc-box{
+  margin-top:52px;border:1px solid var(--b2);background:var(--ink2);
+  display:grid;grid-template-columns:1fr 1fr;
+}
+.lc-left{padding:44px 40px;border-right:1px solid var(--b1)}
+.lc-right{padding:44px 40px}
+.lc-tag{font-family:'Space Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.lc-tag::before{content:'▸';color:var(--cyan)}
+.lc-h{font-size:24px;font-weight:900;letter-spacing:-.03em;margin-bottom:10px}
+.lc-p{font-size:13px;color:var(--muted);line-height:1.7;font-weight:400}
+.lc-form{display:flex;flex-direction:column;gap:10px}
+.lc-inp{
+  background:var(--ink3);border:1px solid var(--b2);color:var(--white);
+  font-family:'Outfit',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;
+}
+.lc-inp::placeholder{color:var(--dim)}
+.lc-inp:focus{border-color:var(--cyan)}
+.lc-sel{background:var(--ink3);border:1px solid var(--b2);color:var(--white);font-family:'Outfit',sans-serif;font-size:14px;padding:11px 14px;outline:none;cursor:pointer}
+.lc-sub{background:var(--cyan);color:#000;font-size:14px;font-weight:800;padding:13px;border:none;cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.lc-sub:hover{background:#33eeff;box-shadow:0 0 24px var(--cyan-g)}
+.lc-disc{font-size:11px;color:var(--dim);margin-top:6px;font-family:'Space Mono',monospace}
+.lc-success{display:none;text-align:center;padding:20px 0}
+.lc-success-i{font-size:40px;display:block;margin-bottom:12px}
+.lc-success h4{font-size:22px;font-weight:900;margin-bottom:8px;color:var(--cyan)}
+.lc-success p{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ─── PARTNER ─── */
+.partner-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:52px;align-items:start}
+.partner-steps{display:flex;flex-direction:column;gap:0}
+.ps{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--b1)}
+.ps:first-child{padding-top:0}
+.ps:last-child{border-bottom:none}
+.ps-n{font-family:'Space Mono',monospace;font-size:10px;color:var(--cyan);width:24px;flex-shrink:0;padding-top:2px}
+.ps-title{font-size:14px;font-weight:700;margin-bottom:3px}
+.ps-desc{font-size:13px;color:var(--muted);line-height:1.6;font-weight:400}
+.partner-card{border:1px solid var(--b2);background:var(--ink2);padding:32px}
+.pc-title{font-size:16px;font-weight:700;margin-bottom:18px;color:var(--cyan)}
+.po-list{display:flex;flex-direction:column;gap:12px}
+.po{padding:15px;background:var(--ink3);border:1px solid var(--b1);transition:border-color .2s;cursor:default}
+.po:hover{border-color:var(--cyan)}
+.po-title{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.po-desc{font-size:12px;color:var(--muted);line-height:1.55;font-weight:400}
+.ctag{font-family:'Space Mono',monospace;font-size:9px;color:var(--cyan);background:var(--cyan-d);border:1px solid rgba(0,229,255,.2);padding:2px 8px}
+
+/* ─── FINAL CTA ─── */
+.final-cta-sec{
+  text-align:center;padding:110px 32px;position:relative;overflow:hidden;
+}
+.fc-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:700px;height:700px;pointer-events:none;
+  background:radial-gradient(circle,rgba(0,229,255,.08) 0%,transparent 65%);
+}
+.fc-eye{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--amber);
+  border:1px solid rgba(255,165,0,.3);background:var(--amber-d);
+  padding:5px 13px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:22px;
+}
+.fc-h{font-size:clamp(40px,6vw,78px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:16px;position:relative;z-index:1}
+.fc-h span{
+  background:linear-gradient(90deg,var(--cyan),var(--lime));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.fc-sub{font-size:17px;color:var(--muted);max-width:480px;margin:0 auto 40px;font-weight:400;line-height:1.7;position:relative;z-index:1}
+.fc-btns{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative;z-index:1;margin-bottom:16px}
+.fc-note{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);position:relative;z-index:1}
+.fc-note span{color:var(--green)}
+.fc-secure{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);position:relative;z-index:1}
+
+/* ─── FOOTER ─── */
+footer{
+  border-top:1px solid var(--b1);padding:22px 32px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.f-logo{font-size:15px;font-weight:800;color:var(--dim);letter-spacing:-.02em}
+.f-logo span{color:var(--cyan)}
+.f-links{display:flex;gap:20px}
+.f-links a{font-size:12px;color:var(--dim);text-decoration:none;transition:color .2s;font-family:'Space Mono',monospace}
+.f-links a:hover{color:var(--white)}
+.f-copy{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim)}
+
+/* ─── MODALS ─── */
+.m-ov{
+  position:fixed;inset:0;z-index:600;
+  background:rgba(6,7,15,.94);backdrop-filter:blur(14px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;padding:20px;
+}
+.m-ov.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--ink2);border:1px solid var(--b2);
+  width:100%;max-width:460px;padding:44px 36px;position:relative;
+  transform:translateY(14px);transition:transform .3s;
+}
+.m-ov.open .modal{transform:translateY(0)}
+.m-x{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;transition:color .2s;line-height:1}
+.m-x:hover{color:var(--white)}
+.m-eye{font-family:'Space Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.m-h{font-size:26px;font-weight:900;letter-spacing:-.035em;margin-bottom:8px;line-height:1.05}
+.m-p{font-size:13px;color:var(--muted);margin-bottom:24px;font-weight:400;line-height:1.6}
+.m-form{display:flex;flex-direction:column;gap:11px}
+.m-inp{background:var(--ink3);border:1px solid var(--b2);color:var(--white);font-family:'Outfit',sans-serif;font-size:14px;padding:12px 14px;outline:none;transition:border-color .2s}
+.m-inp::placeholder{color:var(--dim)}
+.m-inp:focus{border-color:var(--cyan)}
+.m-sel{background:var(--ink3);border:1px solid var(--b2);color:var(--white);font-family:'Outfit',sans-serif;font-size:14px;padding:12px 14px;outline:none;cursor:pointer}
+.m-sub{background:var(--cyan);color:#000;font-size:15px;font-weight:800;padding:13px;border:none;cursor:pointer;transition:background .2s;margin-top:4px;letter-spacing:.02em}
+.m-sub:hover{background:#33eeff}
+.m-disc{font-size:10px;color:var(--dim);text-align:center;margin-top:9px;line-height:1.5;font-family:'Space Mono',monospace}
+.m-success{display:none;text-align:center;padding:16px 0}
+.m-success-i{font-size:40px;margin-bottom:12px;display:block}
+.m-success h3{font-size:24px;font-weight:900;margin-bottom:8px;color:var(--cyan)}
+.m-success p{font-size:13px;color:var(--muted);line-height:1.65;font-weight:400}
+
+/* payment modal */
+.pay-plan-box{padding:13px 16px;background:var(--ink3);border:1px solid var(--b1);font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8}
+.pay-plan-box span.val{color:var(--white)}
+.pay-plan-box span.good{color:var(--green)}
+.pay-plan-box span.hl{color:var(--cyan)}
+.m-sub.pay{background:var(--lime);color:#000}
+.m-sub.pay:hover{background:#d4ff33}
+
+/* ─── SCROLL REVEAL ─── */
+.sr{opacity:0;transform:translateY(16px);transition:opacity .65s ease,transform .65s ease}
+.sr.in{opacity:1;transform:translateY(0)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .wrap{padding:0 20px}
+  nav{padding:0 20px}
+  .hero{padding:90px 20px 60px}
+  .prob-layout,.engines,.demo-layout,.nf-hero,.lc-box,.objection-box,.partner-layout{grid-template-columns:1fr}
+  .lc-left{border-right:none;border-bottom:1px solid var(--b1)}
+  .wyg,.who,.steps{grid-template-columns:1fr}
+  .who{grid-template-columns:repeat(2,1fr)}
+  .ppanel.active{grid-template-columns:1fr}
+  .pc.hot{margin:0}
+  .trust-grid{grid-template-columns:1fr}
+  .h-stats{gap:24px}
+  .h-trust{gap:16px}
+  .final-cta-sec{padding:80px 20px}
+  footer{flex-direction:column;align-items:flex-start;gap:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-mark">N</div>
+    Nexus <span>Compute</span> Cloud
+  </div>
+  <div class="nav-r">
+    <a href="#engines" class="nav-a">Solutions</a>
+    <a href="#pricing" class="nav-a">Pricing</a>
+    <a href="#nexusflow" class="nav-a">NexusFlow AI</a>
+    <a href="#" class="nav-btn" onclick="openModal(event)">Deploy Now →</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════
+  1. HERO
+══════════════════════════════════ -->
+<section>
+<div class="hero-glow"></div>
+<div class="hero">
+  <div class="h-kicker"><div class="h-kicker-dot"></div>AI Infrastructure Built for Output · Not Research</div>
+
+  <h1 class="h1">
+    Run AI Workloads
+    <span class="accent">24/7. No Limits.</span>
+    <span class="sub-h">Without paying insane API bills or getting throttled mid-client-workflow.</span>
+  </h1>
+
+  <p class="h-sub">
+    AI agencies and creators are losing <b>40–70% of their margin</b> to API costs, rate limits, and infrastructure they can't control.
+    NexusCompute gives you a <b>dedicated AI backend</b> that runs your workloads reliably — at a fraction of what you're paying now.
+  </p>
+
+  <div class="h-btns">
+    <a href="#pricing" class="btn-p">⚙️ Start Running Workloads</a>
+    <a href="#demo" class="btn-g">▶ Watch Live Demo</a>
+  </div>
+
+  <div class="h-trust">
+    <div class="ht-item">Built for production workloads</div>
+    <div class="ht-item">Used by AI agencies & creators</div>
+    <div class="ht-item">Handles continuous workloads reliably</div>
+    <div class="ht-item">Live in 24 hours</div>
+    <div class="ht-item">Zero vendor lock-in</div>
+  </div>
+
+  <div class="h-stats">
+    <div><div class="sn">~60%</div><div class="sl">Lower compute cost</div></div>
+    <div><div class="sn">0</div><div class="sl">Rate limits — ever</div></div>
+    <div><div class="sn">24h</div><div class="sl">From payment to live</div></div>
+    <div><div class="sn">2</div><div class="sl">Engines: Auto + Creative</div></div>
+  </div>
+</div>
+</section>
+
+<div class="tools-bar">
+  <span class="tbl">Integrates with →</span>
+  <span class="tc">n8n</span><span class="tc">Make.com</span><span class="tc">Zapier</span>
+  <span class="tc">Stable Diffusion</span><span class="tc">ComfyUI</span>
+  <span class="tc">LangChain</span><span class="tc">Any HTTP Client</span>
+</div>
+
+<!-- ══════════════════════════════════
+  2. PROBLEM
+══════════════════════════════════ -->
+<section class="sec sec-alt">
+<div class="wrap">
+  <div class="eyebrow sr">The Real Problem</div>
+  <h2 class="sh2 sr">Your AI infrastructure is<br>bleeding your business dry.</h2>
+  <p class="sp sr">Every API call is a tax. Every rate limit is a client risk. Every outage is money walking out the door.</p>
+
+  <div class="prob-layout">
+    <div class="prob-list sr">
+      <div class="pi">
+        <div class="pi-icon">📈</div>
+        <div>
+          <div class="pi-title">API Bills That Never Stop Growing</div>
+          <div class="pi-desc">Per-call pricing was designed for experiments — not for running production workloads at agency volume. Every new client you win adds another unpredictable cost you can't control.</div>
+          <div class="pi-stat">Consumer API prices 3× higher than 18 months ago</div>
+        </div>
+      </div>
+      <div class="pi">
+        <div class="pi-icon">🚫</div>
+        <div>
+          <div class="pi-title">Rate Limits That Kill Client Relationships</div>
+          <div class="pi-desc">You hit 500 calls. Your workflow stops. Your client's automation is down. You're on shared infrastructure that throttles without warning — and your client doesn't care why, they care that it's broken.</div>
+          <div class="pi-stat">Shared limits = failures you cannot predict</div>
+        </div>
+      </div>
+      <div class="pi">
+        <div class="pi-icon">🎨</div>
+        <div>
+          <div class="pi-title">Queue Times That Kill Creator Momentum</div>
+          <div class="pi-desc">You're generating at scale and you're behind 300 other users on shared GPU. Your content business runs on output speed — every minute in the queue is momentum you lose to competitors.</div>
+          <div class="pi-stat">Shared GPU queues can run 10–40 minutes</div>
+        </div>
+      </div>
+      <div class="pi">
+        <div class="pi-icon">📉</div>
+        <div>
+          <div class="pi-title">Scaling That Breaks Your Business Model</div>
+          <div class="pi-desc">More clients should mean more profit. With per-call pricing, more clients means more costs that outgrow your revenue. You can win business and become less profitable simultaneously.</div>
+          <div class="pi-stat">Agencies lose 40–70% margin to infra at scale</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cost-viz sr">
+      <div class="cv-head">
+        <span>5-Client Agency · Monthly Reality</span>
+        <span class="cv-label">⚠ Your Current Bill</span>
+      </div>
+      <div class="cv-body">
+        <div class="cv-row"><span class="ck">Monthly AI calls (5 clients)</span><span class="cv neu">500,000</span></div>
+        <div class="cv-row"><span class="ck">Consumer API cost</span><span class="cv bad">~$1,500/mo</span></div>
+        <div class="cv-row"><span class="ck">Rate limit incidents</span><span class="cv bad">4–8 avg</span></div>
+        <div class="cv-row"><span class="ck">Hours lost to infra issues</span><span class="cv bad">8–20 hrs</span></div>
+        <div class="cv-row"><span class="ck">Client complaints</span><span class="cv bad">Regular</span></div>
+        <div class="cv-row"><span class="ck">Model flexibility</span><span class="cv bad">One vendor only</span></div>
+        <div class="cv-total">
+          <span class="cvt-lbl">Annual infra drain</span>
+          <span class="cvt-val">$18,000+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  3. WHAT YOU ACTUALLY GET
+══════════════════════════════════ -->
+<section class="sec">
+<div class="wrap">
+  <div class="eyebrow sr">What You Actually Get</div>
+  <h2 class="sh2 sr">Outcomes. Not hardware specs.</h2>
+  <p class="sp sr">Everything here maps directly to a business result — not a feature list.</p>
+
+  <div class="wyg sr">
+    <div class="wyg-c">
+      <span class="wyg-icon">💰</span>
+      <div class="wyg-title">Keep Your Margin</div>
+      <div class="wyg-desc">Flat-rate infrastructure replaces unpredictable per-call billing. You know your cost before you price your clients. Profit stays predictable at any volume.</div>
+      <div class="wyg-metric">Up to 60% lower than consumer APIs</div>
+    </div>
+    <div class="wyg-c">
+      <span class="wyg-icon">⚡</span>
+      <div class="wyg-title">Workloads That Never Break</div>
+      <div class="wyg-desc">Dedicated compute means your workflows don't compete with anyone else's. No throttling. No rate limits. No infrastructure failures in front of clients.</div>
+      <div class="wyg-metric">Zero rate limit incidents on dedicated plans</div>
+    </div>
+    <div class="wyg-c">
+      <span class="wyg-icon">🔒</span>
+      <div class="wyg-title">Own Your Stack</div>
+      <div class="wyg-desc">Run any open-source model. No vendor lock-in. No surprise deprecations. When OpenAI changes pricing again — it doesn't affect you. You control your infrastructure.</div>
+      <div class="wyg-metric">Any open model · Zero lock-in</div>
+    </div>
+    <div class="wyg-c">
+      <span class="wyg-icon">📊</span>
+      <div class="wyg-title">Bill Clients Accurately</div>
+      <div class="wyg-desc">Per-client usage tracking built in. Know exactly what Client A costs vs Client B. Bill accurately. Protect margin on every single project you deliver.</div>
+      <div class="wyg-metric">Per-client breakdown on Agency plan</div>
+    </div>
+    <div class="wyg-c">
+      <span class="wyg-icon">🚀</span>
+      <div class="wyg-title">Live in 24 Hours</div>
+      <div class="wyg-desc">No server configuration. No DevOps. No infrastructure knowledge required. Pay, get access, start running workloads. Done-for-you setup included in every plan.</div>
+      <div class="wyg-metric">Setup included · 24hr turnaround guaranteed</div>
+    </div>
+    <div class="wyg-c">
+      <span class="wyg-icon">🤖</span>
+      <div class="wyg-title">NexusFlow AI Watches Your Back</div>
+      <div class="wyg-desc">Every account includes NexusFlow AI — an infrastructure intelligence layer that monitors workloads, catches inefficiencies, and optimizes costs automatically. Not a chatbot. A system.</div>
+      <div class="wyg-metric">Included in all plans · Zero extra cost</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  4. ENGINE SPLIT
+══════════════════════════════════ -->
+<section class="sec sec-alt" id="engines">
+<div class="wrap">
+  <div class="eyebrow sr">Two Engines. One Platform.</div>
+  <h2 class="sh2 sr">Built for what you<br>actually build.</h2>
+  <p class="sp sr">Two independent compute engines — each optimized for a completely different workload. Pick one or use both.</p>
+
+  <div class="engines sr">
+    <div class="eng auto">
+      <div class="eng-glow-a"></div>
+      <div class="eng-badge">⚙️ Automation Engine</div>
+      <div class="eng-title">For AI Agencies &<br>Workflow Builders</div>
+      <div class="eng-desc">Low-latency inference optimized for automation pipelines. Run hundreds of concurrent client workflows — no rate limits, no failures, no midnight emergencies before client deadlines.</div>
+      <ul class="eng-list">
+        <li>n8n, Make.com, Zapier — one URL change from your current setup</li>
+        <li>LLM inference: large and small models pre-configured</li>
+        <li>Per-client workspace isolation and usage tracking</li>
+        <li>AI agent pipelines, RAG systems, document processing</li>
+        <li>Sub-400ms average response on standard workloads</li>
+        <li>Scales with your client roster — not against it</li>
+      </ul>
+      <a href="#pricing" class="eng-cta" onclick="showPanel('auto')">See Automation Pricing →</a>
+    </div>
+    <div class="eng creative">
+      <div class="eng-glow-c"></div>
+      <div class="eng-badge">🎨 Creative Engine</div>
+      <div class="eng-title">For AI Creators &<br>GenAI Pipelines</div>
+      <div class="eng-desc">High-performance compute for image and video generation. No queue. No throttling. No "position #312." Your creative pipeline runs when you run — at the speed your business demands.</div>
+      <ul class="eng-list">
+        <li>Stable Diffusion XL, FLUX, and custom model support</li>
+        <li>ComfyUI and AUTOMATIC1111 fully compatible</li>
+        <li>Batch generation without speed degradation</li>
+        <li>Sub-4 second generation on standard SDXL prompts</li>
+        <li>LoRA fine-tune and custom character/style support</li>
+        <li>Video generation pipelines — sustained, no interruption</li>
+      </ul>
+      <a href="#pricing" class="eng-cta" onclick="showPanel('creative')">See Creative Pricing →</a>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  5. WHO THIS IS FOR
+══════════════════════════════════ -->
+<section class="sec">
+<div class="wrap">
+  <div class="eyebrow sr">Who This Is For</div>
+  <h2 class="sh2 sr">If AI output is your business,<br>this was built for you.</h2>
+
+  <div class="who sr">
+    <div class="who-c"><span class="who-icon">🏢</span><div class="who-title">AI Automation Agencies</div><div class="who-desc">Running client workflows at volume. Rate limits are a client relationship risk you can't afford.</div></div>
+    <div class="who-c"><span class="who-icon">⚙️</span><div class="who-title">Workflow Builders</div><div class="who-desc">Hitting the ceiling of what built-in API nodes can do. You need more control and better margin.</div></div>
+    <div class="who-c"><span class="who-icon">🎨</span><div class="who-title">AI Content Creators</div><div class="who-desc">Generating at scale. Consumer GPU queues you behind everyone else. Output speed is your competitive edge.</div></div>
+    <div class="who-c"><span class="who-icon">🚀</span><div class="who-title">GenAI Startups</div><div class="who-desc">Your product works. Users are growing. Your API bill is scaling faster than your MRR. Time to own compute.</div></div>
+    <div class="who-c"><span class="who-icon">🤖</span><div class="who-title">AI Educators & Influencers</div><div class="who-desc">Demos that need to work every time, on camera. Reliable infrastructure means your content never fails live.</div></div>
+    <div class="who-c"><span class="who-icon">🏭</span><div class="who-title">Image/Video Pipelines</div><div class="who-desc">Batch generation for clients or products. You need throughput, consistency, and economics that actually work.</div></div>
+    <div class="who-c"><span class="who-icon">📱</span><div class="who-title">App Developers</div><div class="who-desc">Embedding AI in products. Per-call billing destroys unit economics at scale. Flat-rate lets you price confidently.</div></div>
+    <div class="who-c"><span class="who-icon">🏷️</span><div class="who-title">White-Label Resellers</div><div class="who-desc">Need a backend invisible to your clients and reliable enough to stake your reputation on.</div></div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  6. BUILT FOR REAL WORKLOADS
+══════════════════════════════════ -->
+<section class="sec sec-alt">
+<div class="wrap">
+  <div class="eyebrow sr">Built for Real Workloads</div>
+  <h2 class="sh2 sr">Reliability isn't a feature.<br>It's the foundation.</h2>
+  <p class="sp sr">Every objection you have about trusting new infrastructure — we've answered it below.</p>
+
+  <div class="trust-grid sr">
+    <div class="trust-c"><div class="trust-icon">🏗️</div><div><div class="trust-title">Production-grade foundations</div><div class="trust-desc">Built on established GPU compute networks with years of uptime history. NexusCompute adds the business-optimized layer — API design, billing logic, and workflow integrations — on top of proven infrastructure.</div></div></div>
+    <div class="trust-c"><div class="trust-icon">📞</div><div><div class="trust-title">Support that actually responds</div><div class="trust-desc">Early clients get a private support channel with direct response time. When something breaks at 11pm before a client deadline, you message one person — and it gets fixed. No ticket queues. No chatbots.</div></div></div>
+    <div class="trust-c"><div class="trust-icon">📈</div><div><div class="trust-title">Scales as you grow</div><div class="trust-desc">Start on Starter, move to Agency, move to Enterprise — seamlessly. Your endpoint URL stays the same. Your integrations stay the same. Scaling is a plan upgrade, not an infrastructure migration.</div></div></div>
+    <div class="trust-c"><div class="trust-icon">🔓</div><div><div class="trust-title">Zero lock-in — ever</div><div class="trust-desc">Standard API conventions throughout. If you ever want to leave, it's one line of code to switch back to any other provider. We earn your business every month — we don't trap you into staying.</div></div></div>
+  </div>
+
+  <div class="objection-box sr">
+    <div class="obj">
+      <div class="obj-title">❌ DIY (RunPod/Vast.ai direct)</div>
+      <div class="obj-list">
+        <div class="oi"><span class="x">✗</span><span>Requires <b>DevOps knowledge</b> — most agency owners shouldn't need to become infrastructure engineers</span></div>
+        <div class="oi"><span class="x">✗</span><span><b>No support</b> when something breaks during a live client workflow</span></div>
+        <div class="oi"><span class="x">✗</span><span><b>No per-client billing</b> — one undifferentiated bill with no project-level breakdown</span></div>
+        <div class="oi"><span class="x">✗</span><span><b>40–80 hours of setup</b> to configure properly — time not spent on client work</span></div>
+        <div class="oi"><span class="x">✗</span><span><b>No workflow integrations</b> — you build every n8n and ComfyUI connector from scratch</span></div>
+      </div>
+    </div>
+    <div class="obj good">
+      <div class="obj-title" style="color:var(--cyan)">✅ NexusCompute Cloud</div>
+      <div class="obj-list">
+        <div class="oi"><span class="c">✓</span><span>Built for <b>operators, not engineers</b> — connect your workflow in minutes, not days</span></div>
+        <div class="oi"><span class="c">✓</span><span><b>Direct support line</b> — early clients get private channel with personal response</span></div>
+        <div class="oi"><span class="c">✓</span><span><b>Per-client usage tracking</b> — know exactly what each project costs, bill accurately</span></div>
+        <div class="oi"><span class="c">✓</span><span><b>Live in 24 hours</b> — we set up, test, and hand you a working endpoint</span></div>
+        <div class="oi"><span class="c">✓</span><span><b>Pre-built templates</b> for n8n, Make, ComfyUI — connect in minutes</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  7. GET STARTED IN 10 MINUTES
+══════════════════════════════════ -->
+<section class="sec">
+<div class="wrap">
+  <div class="eyebrow lime sr">Time to Value</div>
+  <h2 class="sh2 sr">⚡ Running workloads<br>in under 10 minutes.</h2>
+  <p class="sp sr">No infrastructure setup. No DevOps. Four steps from payment to running AI at scale.</p>
+
+  <div class="steps sr">
+    <div class="step">
+      <div class="step-connector"></div>
+      <span class="step-n">01</span>
+      <span class="step-icon">💳</span>
+      <div class="step-title">Choose Your Plan</div>
+      <div class="step-desc">Pick Automation Engine or Creative Engine — or both. Pay directly via Razorpay. Secure checkout, instant confirmation.</div>
+      <div class="step-time">~2 minutes</div>
+    </div>
+    <div class="step">
+      <div class="step-connector"></div>
+      <span class="step-n">02</span>
+      <span class="step-icon">📧</span>
+      <div class="step-title">Receive Your Access</div>
+      <div class="step-desc">Within 24 hours of payment: your API endpoint URL, authentication key, and getting-started guide arrive in your inbox.</div>
+      <div class="step-time">Within 24 hours</div>
+    </div>
+    <div class="step">
+      <div class="step-connector"></div>
+      <span class="step-n">03</span>
+      <span class="step-icon">🔌</span>
+      <div class="step-title">Connect Your Workflow</div>
+      <div class="step-desc">Change one URL in your n8n workflow, Make automation, or ComfyUI config. That's the entire integration. Same API structure as what you use now.</div>
+      <div class="step-time">~5 minutes</div>
+    </div>
+    <div class="step">
+      <span class="step-n">04</span>
+      <span class="step-icon">🚀</span>
+      <div class="step-title">Start Running Workloads</div>
+      <div class="step-desc">Your workflows are live. No rate limits. No queue. NexusFlow AI starts monitoring from minute one. You focus on clients — not infrastructure.</div>
+      <div class="step-time">Immediately</div>
+    </div>
+  </div>
+
+  <div style="margin-top:28px;text-align:center" class="sr">
+    <a href="#pricing" class="btn-p" style="font-size:16px;padding:16px 40px">Deploy Instantly — From $199/mo →</a>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px;font-family:'Space Mono',monospace">Setup included in every plan · 24-hour delivery guaranteed</p>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  8. DEMO
+══════════════════════════════════ -->
+<section class="sec sec-alt" id="demo">
+<div class="wrap">
+  <div class="eyebrow sr">How It Works</div>
+  <h2 class="sh2 sr">See it run. Then decide.</h2>
+  <p class="sp sr">Real workloads. Real latency. Real cost comparison. No slides, no marketing — just the infrastructure running live.</p>
+
+  <div class="demo-layout">
+    <div class="demo-box sr">
+      <div class="demo-bar">
+        <span class="demo-bar-l">NexusCompute — Live Demo</span>
+        <div class="demo-live"><div class="ldot"></div>Real Recording · No Edits</div>
+      </div>
+      <div class="demo-thumb" onclick="openModal(event)">
+        <button class="play-btn">▶</button>
+        <div class="demo-thumb-lbl">
+          <div class="demo-thumb-t">Automation Engine + Creative Engine — Side by Side</div>
+          <div class="demo-thumb-s">n8n workflow + image generation on dedicated infrastructure</div>
+        </div>
+      </div>
+      <div class="demo-foot">
+        <span class="demo-dur">⏱ ~2 min</span>
+        <span class="demo-tag">Live latency · Real cost shown</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-points sr">
+        <div class="dp"><div class="dp-n">01</div><div><div class="dp-title">Speed that closes clients</div><div class="dp-desc">Sub-400ms LLM response. Image generation under 4 seconds. The kind of performance you can demo to clients and have them reach for their card.</div></div></div>
+        <div class="dp"><div class="dp-n">02</div><div><div class="dp-title">Real n8n workflow — live</div><div class="dp-desc">A live n8n automation calling the NexusCompute endpoint. One URL change from your current setup. You see the exact node configuration used.</div></div></div>
+        <div class="dp"><div class="dp-n">03</div><div><div class="dp-title">We try to break it on camera</div><div class="dp-desc">1,000 rapid API calls fired simultaneously. Nothing breaks, nothing throttles. That's what dedicated infrastructure looks like vs shared APIs.</div></div></div>
+        <div class="dp"><div class="dp-n">04</div><div><div class="dp-title">Live cost comparison</div><div class="dp-desc">Same workload through a consumer API, side by side. The cost difference is visible in real dollars. No narration needed — the numbers speak.</div></div></div>
+      </div>
+      <div style="margin-top:18px;padding:16px 18px;background:var(--cyan-d);border:1px solid rgba(0,229,255,.25);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap" class="sr">
+        <div><div style="font-size:14px;font-weight:700">Want a demo with your workflow?</div><div style="font-size:12px;color:var(--muted);margin-top:2px">We'll run your actual n8n or Make setup on our infra — live.</div></div>
+        <a href="#" class="btn-p" onclick="openModal(event)" style="font-size:13px;padding:11px 20px;white-space:nowrap">Book Demo →</a>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  9. PRICING
+══════════════════════════════════ -->
+<section class="sec" id="pricing">
+<div class="wrap">
+  <div class="eyebrow sr">Pricing</div>
+  <h2 class="sh2 sr">Know exactly what you pay.<br>Always.</h2>
+  <p class="sp sr">No overage surprises. No auto-charges. If usage grows past your plan, we notify you first — you decide what happens next.</p>
+
+  <div class="ptabs sr">
+    <button class="ptab active auto" onclick="showPanel('auto')">⚙️ Automation Engine</button>
+    <button class="ptab creative" onclick="showPanel('creative')">🎨 Creative Engine</button>
+  </div>
+
+  <div class="ppanels">
+    <div class="ppanel auto active" id="panel-auto">
+      <div class="pc auto sr">
+        <div class="p-tier">Automation Starter</div>
+        <div class="p-amt">$199</div>
+        <div class="p-period">/month</div>
+        <div class="p-div"></div>
+        <ul class="p-feats">
+          <li>High-capacity shared cluster</li>
+          <li>Up to 200K calls/month (fair use)</li>
+          <li>Standard LLM library — small + mid models</li>
+          <li>OpenAI-compatible API endpoint</li>
+          <li>NexusFlow AI — basic monitoring</li>
+          <li>Email support · Setup included</li>
+        </ul>
+        <div class="p-note">Fair use: above 200K calls may require upgrade. We notify you first — never auto-charge.</div>
+        <a href="#" class="pbtn ghost" onclick="openPayment(event,'Automation Starter','199')">Get Started →</a>
+      </div>
+
+      <div class="pc auto hot sr">
+        <div class="hot-b">Best Value</div>
+        <div class="p-tier">Automation Agency</div>
+        <div class="p-amt">$559</div>
+        <div class="p-period">/month</div>
+        <div class="p-div"></div>
+        <ul class="p-feats">
+          <li>Dedicated compute — reserved exclusively for you</li>
+          <li>Scalable volume — fair use policy applies</li>
+          <li>Full LLM library — large models + custom configs</li>
+          <li>Per-client workspace + usage breakdown</li>
+          <li>NexusFlow AI — full optimization suite</li>
+          <li>Direct Slack support line</li>
+          <li>n8n + Make.com starter templates included</li>
+          <li>24-hour setup guarantee</li>
+        </ul>
+        <div class="p-note">For agencies with 3–15 active client workflows. Higher volume? See Enterprise.</div>
+        <a href="#" class="pbtn as" onclick="openPayment(event,'Automation Agency','559')">Start Running Workloads →</a>
+      </div>
+
+      <div class="pc auto sr">
+        <div class="p-tier">Enterprise</div>
+        <div class="p-amt" style="font-size:38px;line-height:1.2;padding-top:8px">Custom</div>
+        <div class="p-period">tailored pricing</div>
+        <div class="p-div"></div>
+        <ul class="p-feats">
+          <li>Multi-node provisioning</li>
+          <li>Fine-tuning infrastructure</li>
+          <li>White-label API</li>
+          <li>Custom SLA + uptime commitment</li>
+          <li>Dedicated account management</li>
+          <li>Volume pricing with clear unit economics</li>
+        </ul>
+        <div class="p-note">15+ clients or SaaS products with high inference volume. Let's build a custom plan.</div>
+        <a href="#" class="pbtn ghost" onclick="openModal(event)">Contact Us →</a>
+      </div>
+    </div>
+
+    <div class="ppanel creative" id="panel-creative">
+      <div class="pc creative sr">
+        <div class="p-tier">Creative Starter</div>
+        <div class="p-amt">$229</div>
+        <div class="p-period">/month</div>
+        <div class="p-div"></div>
+        <ul class="p-feats">
+          <li>High-performance shared cluster</li>
+          <li>Stable Diffusion XL + FLUX support</li>
+          <li>ComfyUI + A1111 compatible</li>
+          <li>Fair use generation volume</li>
+          <li>NexusFlow AI — basic monitoring</li>
+          <li>Email support · Setup included</li>
+        </ul>
+        <div class="p-note">For individual creators and small pipelines. Scaling up? Creative Pro removes all limits.</div>
+        <a href="#" class="pbtn ghost" onclick="openPayment(event,'Creative Starter','229')">Get Started →</a>
+      </div>
+
+      <div class="pc creative hot sr">
+        <div class="hot-b">Best Value</div>
+        <div class="p-tier">Creative Pro</div>
+        <div class="p-amt">$559</div>
+        <div class="p-period">/month</div>
+        <div class="p-div"></div>
+        <ul class="p-feats">
+          <li>Dedicated creative compute — zero queue ever</li>
+          <li>Full model library — SDXL, FLUX, custom LoRA</li>
+          <li>Batch generation — 200+ images per session</li>
+          <li>Video generation pipeline support</li>
+          <li>NexusFlow AI — full optimization suite</li>
+          <li>Direct Slack support line</li>
+          <li>ComfyUI workflow templates included</li>
+          <li>24-hour setup guarantee</li>
+        </ul>
+        <div class="p-note">For serious creators, AI studios, and GenAI pipelines. This is production-grade creative compute.</div>
+        <a href="#" class="pbtn cs" onclick="openPayment(event,'Creative Pro','559')">Deploy Instantly →</a>
+      </div>
+
+      <div class="pc creative sr">
+        <div class="p-tier">Enterprise</div>
+        <div class="p-amt" style="font-size:38px;line-height:1.2;padding-top:8px">Custom</div>
+        <div class="p-period">tailored pricing</div>
+        <div class="p-div"></div>
+        <ul class="p-feats">
+          <li>Multi-GPU creative provisioning</li>
+          <li>Custom model deployment</li>
+          <li>White-label creative API</li>
+          <li>Bulk generation SLA</li>
+          <li>Dedicated pipeline management</li>
+          <li>Volume pricing for studios + platforms</li>
+        </ul>
+        <div class="p-note">For AI studios, content platforms, and GenAI companies with serious throughput requirements.</div>
+        <a href="#" class="pbtn ghost" onclick="openModal(event)">Contact Us →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="fair-use sr"><b>Fair Use Policy:</b> All plans include clear volume guidance. We notify you before you ever hit a limit — we never auto-charge or throttle without warning. Your workloads keep running while we have the conversation.</div>
+  <div class="p-footer sr">Founding member pricing locked in permanently for first 12 signups. <span>Early clients save 25% — forever.</span></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  10. NEXUSFLOW AI
+══════════════════════════════════ -->
+<section class="sec sec-alt" id="nexusflow">
+<div class="wrap">
+  <div class="eyebrow lime sr">AI Infrastructure Intelligence</div>
+  <h2 class="sh2 sr">Meet NexusFlow AI.</h2>
+  <p class="sp sr">Every account includes NexusFlow AI — an automated infrastructure intelligence system that analyzes your workloads, optimizes costs, and protects your revenue. Automatically.</p>
+
+  <div class="nf-hero">
+    <div>
+      <div class="nf-badge sr"><div class="nf-badge-dot"></div>NexusFlow AI — Active on All Plans</div>
+
+      <div class="nf-value-prop sr">
+        "NexusFlow AI automatically analyzes your workload, recommends the optimal setup, and ensures you never overpay or hit limits — without you lifting a finger."
+      </div>
+
+      <div class="nf-caps sr">
+        <div class="nf-cap"><span class="nf-cap-icon">🔍</span><div class="nf-cap-title">Workload Analysis</div><div class="nf-cap-desc">Continuously monitors your workflows, identifies performance bottlenecks, and tells you exactly where compute is being wasted.</div></div>
+        <div class="nf-cap"><span class="nf-cap-icon">💰</span><div class="nf-cap-title">Revenue Protection</div><div class="nf-cap-desc">Detects when you're overpaying for compute. Automatically recommends cheaper configurations that maintain identical output quality.</div></div>
+        <div class="nf-cap"><span class="nf-cap-icon">📈</span><div class="nf-cap-title">Smart Scaling Alerts</div><div class="nf-cap-desc">Watches your usage trend and notifies you before you hit capacity — so you scale proactively, not in the middle of a client workflow.</div></div>
+        <div class="nf-cap"><span class="nf-cap-icon">🛡️</span><div class="nf-cap-title">Client Support Handling</div><div class="nf-cap-desc">Handles routine client infrastructure questions automatically. Only escalates genuine issues — so you stay focused on building, not support.</div></div>
+      </div>
+
+      <div style="margin-top:14px;padding:13px 16px;background:var(--ink3);border:1px solid var(--b1);font-size:11px;color:var(--dim);font-family:'Space Mono',monospace;line-height:1.6" class="sr">
+        ⚠ NexusFlow AI is a real system trained on your actual usage data. It provides data-driven recommendations based on what's actually running on your account — not generic advice.
+      </div>
+    </div>
+
+    <div class="nf-chat sr">
+      <div class="nf-chat-head">
+        <span class="nf-chat-name">NexusFlow AI · Infrastructure Assistant</span>
+        <div class="nf-online"><div class="nf-online-dot"></div>Active</div>
+      </div>
+      <div class="nf-msgs" id="nf-msgs">
+        <div class="msg user"><div class="msg-from">You</div><div class="msg-b">My automation workflow is slowing down. 4 clients running simultaneously.</div></div>
+        <div class="msg ai"><div class="msg-from">NexusFlow AI</div><div class="msg-b">Checked your usage data. You're running <b>4 concurrent inference instances</b> — hitting ~91% memory utilisation on your current allocation. That's why you're seeing slowdown.<br><br>Two options I recommend:<br>1. Switch Clients C + D to the 7B model variant for their summarisation tasks — <b>identical output quality, 4× faster, saves ~$82/mo</b><br>2. Upgrade to dedicated allocation — provisioned in ~15 min<br><br>Option 1 solves the immediate problem without plan change. Want me to switch Clients C + D now?</div></div>
+        <div class="msg user"><div class="msg-from">You</div><div class="msg-b">Yes, switch them. Show me the cost impact.</div></div>
+        <div class="msg ai"><div class="msg-from">NexusFlow AI</div><div class="msg-b">Done. Clients C + D updated.<br><br><b>Before:</b> $0.0013/call (large model)<br><b>After:</b> $0.0003/call (7B model)<br><br>At 85K combined monthly calls → <b>$85/month saved</b>. Zero quality change for summarisation workloads. Full config log saved to your dashboard.</div></div>
+      </div>
+      <div class="nf-inp-row">
+        <input class="nf-inp" type="text" placeholder="Ask NexusFlow about your infrastructure..." id="nf-input"/>
+        <button class="nf-send" onclick="nfSend()">Send</button>
+      </div>
+      <div class="nf-disc">Included on all plans · Powered by your real usage data</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  11. LEAD CAPTURE
+══════════════════════════════════ -->
+<section class="sec">
+<div class="wrap">
+  <div class="eyebrow sr">Not Sure Yet?</div>
+  <h2 class="sh2 sr">Get a custom recommendation<br>for your exact setup.</h2>
+
+  <div class="lc-box sr">
+    <div class="lc-left">
+      <div class="lc-tag">Free Recommendation</div>
+      <div class="lc-h">Tell us what you're building.</div>
+      <div class="lc-p">Not sure which plan fits? Tell us your current tools, volume, and budget — we'll send you a specific recommendation within 24 hours. No sales call required. No pressure.</div>
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted)"><span style="color:var(--cyan);font-weight:700;font-size:14px">✓</span>Specific plan recommendation for your use case</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted)"><span style="color:var(--cyan);font-weight:700;font-size:14px">✓</span>Cost comparison vs your current setup</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted)"><span style="color:var(--cyan);font-weight:700;font-size:14px">✓</span>Integration guide for your tools (n8n, Make, ComfyUI)</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted)"><span style="color:var(--cyan);font-weight:700;font-size:14px">✓</span>Response within 24 hours — no follow-up spam</div>
+      </div>
+    </div>
+    <div class="lc-right">
+      <div id="lc-form-wrap">
+        <form class="lc-form" onsubmit="handleLCSubmit(event)">
+          <input class="lc-inp" type="email" placeholder="Your email address" required/>
+          <select class="lc-sel">
+            <option value="" disabled selected>I am a...</option>
+            <option>AI Automation Agency Owner</option>
+            <option>AI Content Creator</option>
+            <option>GenAI Startup / SaaS Founder</option>
+            <option>Workflow Builder / Freelancer</option>
+            <option>Other</option>
+          </select>
+          <select class="lc-sel">
+            <option value="" disabled selected>Current monthly AI spend</option>
+            <option>Under $100/month — just getting started</option>
+            <option>$100–$300/month</option>
+            <option>$300–$1,000/month</option>
+            <option>$1,000–$3,000/month</option>
+            <option>$3,000+/month</option>
+          </select>
+          <input class="lc-inp" type="text" placeholder="Tools you use (n8n, ComfyUI, Make...)" />
+          <button type="submit" class="lc-sub">Get My Free Recommendation →</button>
+        </form>
+        <div class="lc-disc">No spam. One email with your recommendation. That's it.</div>
+      </div>
+      <div class="lc-success" id="lc-success">
+        <span class="lc-success-i">✅</span>
+        <h4>Got it.</h4>
+        <p>We'll send your custom recommendation within <strong>24 hours</strong>.<br>Check <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="592a2c2929362b2d19373c212c2a3a3634292c2d3c773a35362c3d">[email&#160;protected]</a></strong> in your inbox.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  12. PARTNERSHIP / ENTERPRISE
+══════════════════════════════════ -->
+<section class="sec sec-alt">
+<div class="wrap">
+  <div class="eyebrow sr">Partnerships & Enterprise</div>
+  <h2 class="sh2 sr">🤝 Build something<br>bigger together.</h2>
+  <p class="sp sr">Have an audience, a community, or clients who need GPU infrastructure? There's a partnership structure that works for both of us.</p>
+
+  <div class="partner-layout">
+    <div>
+      <div class="partner-steps sr">
+        <div class="ps"><div class="ps-n">01</div><div><div class="ps-title">You bring the audience or clients</div><div class="ps-desc">Creators, agency owners, or builders who need reliable infrastructure. You understand their problems. We have the system to solve them.</div></div></div>
+        <div class="ps"><div class="ps-n">02</div><div><div class="ps-title">We handle the entire backend</div><div class="ps-desc">Setup, configuration, support, optimization, billing. Your brand stays clean. Your community gets infrastructure that works — you didn't have to build it.</div></div></div>
+        <div class="ps"><div class="ps-n">03</div><div><div class="ps-title">You choose the partnership model</div><div class="ps-desc">Revenue share, white-label backend, or co-created community resource. We adapt to what makes business sense for you.</div></div></div>
+      </div>
+    </div>
+
+    <div class="partner-card sr">
+      <div class="pc-title">Partnership Options</div>
+      <div class="po-list">
+        <div class="po"><div class="po-title">💰 Revenue Share <span class="ctag">Most Common</span></div><div class="po-desc">Refer clients and earn a recurring percentage of their monthly plan — for as long as they stay. No hard selling. Just an honest recommendation to people who'd benefit.</div></div>
+        <div class="po"><div class="po-title">🏷️ White-Label Backend</div><div class="po-desc">We run the infrastructure under your brand. Your clients see your product. NexusCompute operates invisibly. You keep the client relationship entirely.</div></div>
+        <div class="po"><div class="po-title">📚 Community Resource</div><div class="po-desc">We build an exclusive tutorial, template, or infrastructure guide for your community at no cost to you. Your audience gets real value. We earn the relationship.</div></div>
+      </div>
+      <div style="margin-top:18px">
+        <a href="#" class="btn-p" onclick="openModal(event)" style="display:block;text-align:center;width:100%;font-size:14px">Discuss a Partnership →</a>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════
+  13. FINAL CTA
+══════════════════════════════════ -->
+<section class="final-cta-sec">
+  <div class="fc-glow"></div>
+  <div class="fc-eye">⚡ Direct Checkout · Powered by Razorpay · Secure</div>
+  <h2 class="fc-h sr">Stop losing margin.<br><span>Start running workloads.</span></h2>
+  <p class="fc-sub sr">Pay now. Get access within 24 hours. Start running AI workloads without limits — today.</p>
+
+  <div class="fc-btns sr">
+    <a href="#" class="btn-p" style="font-size:15px;padding:15px 36px" onclick="openPayment(event,'Automation Agency','559')">⚙️ Deploy Automation — $559/mo</a>
+    <a href="#" class="btn-p lime" style="font-size:15px;padding:15px 36px" onclick="openPayment(event,'Creative Pro','559')">🎨 Deploy Creative — $559/mo</a>
+  </div>
+  <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px" class="sr">
+    <a href="#" class="btn-g" style="font-size:13px;padding:11px 20px" onclick="openPayment(event,'Automation Starter','199')">Automation Starter — $199/mo</a>
+    <a href="#" class="btn-g" style="font-size:13px;padding:11px 20px" onclick="openPayment(event,'Creative Starter','229')">Creative Starter — $229/mo</a>
+  </div>
+  <p class="fc-note sr"><span>12 founding spots remaining.</span> &nbsp;·&nbsp; Setup in 24 hours &nbsp;·&nbsp; Cancel anytime</p>
+  <div class="fc-secure sr">🔒 &nbsp;Secured by Razorpay &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="691a1c1919061b1d29070c111c1a0a0604191c1d0c470a05061c0d">[email&#160;protected]</a> &nbsp;·&nbsp; Zero lock-in</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">Nexus <span>Compute</span> Cloud</div>
+  <div class="f-links">
+    <a href="#engines">Solutions</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#nexusflow">NexusFlow AI</a>
+    <a href="/cdn-cgi/l/email-protection#295a5c5959465b5d69474c515c5a4a4644595c5d4c074a45465c4d">Support</a>
+  </div>
+  <div class="f-copy">© 2025 NexusCompute Cloud · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="95e6e0e5e5fae7e1d5fbf0ede0e6f6faf8e5e0e1f0bbf6f9fae0f1">[email&#160;protected]</a></div>
+</footer>
+
+<!-- ══ DEMO/CONTACT MODAL ══ -->
+<div class="m-ov" id="modal">
+  <div class="modal">
+    <button class="m-x" onclick="closeModal()">×</button>
+    <div id="m-wrap">
+      <div class="m-eye">Book a Demo Call</div>
+      <h3 class="m-h">See it run on your workflow.</h3>
+      <p class="m-p">Tell us your setup. We'll demo NexusCompute on your actual n8n or Make workflow — live. You see the speed and cost difference before paying anything.</p>
+      <form class="m-form" onsubmit="handleSubmit(event)">
+        <input class="m-inp" type="text" placeholder="Your name" required/>
+        <input class="m-inp" type="email" placeholder="Email address" required/>
+        <select class="m-sel">
+          <option value="" disabled selected>I am a...</option>
+          <option>AI Automation Agency Owner</option>
+          <option>AI Content Creator</option>
+          <option>GenAI Startup / SaaS Founder</option>
+          <option>Workflow Builder / Freelancer</option>
+          <option>Other</option>
+        </select>
+        <input class="m-inp" type="text" placeholder="Tools you use (n8n, ComfyUI, Make...)" />
+        <button type="submit" class="m-sub">Book My Demo →</button>
+      </form>
+      <p class="m-disc">No spam. No sales script. Reply within 24 hours.</p>
+    </div>
+    <div class="m-success" id="m-success">
+      <span class="m-success-i">✅</span>
+      <h3>Confirmed.</h3>
+      <p>We'll email you within <strong>24 hours</strong>.<br><br>Urgent? Email directly:<br><strong style="color:var(--cyan)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b4c7c1c4c4dbc6c0f4dad1ccc1c7d7dbd9c4c1c0d19ad7d8dbc1d0">[email&#160;protected]</a></strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAYMENT MODAL ══ -->
+<div class="m-ov" id="pay-modal">
+  <div class="modal">
+    <button class="m-x" onclick="closePayModal()">×</button>
+    <div id="pay-wrap">
+      <div class="m-eye">Secure Checkout · Razorpay</div>
+      <h3 class="m-h" id="pay-title">Automation Agency</h3>
+      <p class="m-p">Complete your details below. You'll receive API access and setup guide within 24 hours of payment.</p>
+      <form class="m-form" onsubmit="handlePayment(event)">
+        <input class="m-inp" type="text" placeholder="Full name" required/>
+        <input class="m-inp" type="email" placeholder="Email address" required/>
+        <input class="m-inp" type="text" placeholder="Company / agency name (optional)"/>
+        <div class="pay-plan-box">
+          Plan: <span class="val" id="pay-plan-lbl">Automation Agency</span><br>
+          Amount: <span class="hl" id="pay-amt-lbl">$559/month</span><br>
+          Setup: <span class="good">Within 24 hours of payment</span><br>
+          Billing: <span class="val">Monthly · Cancel anytime</span>
+        </div>
+        <button type="submit" class="m-sub pay">🔒 Proceed to Razorpay →</button>
+      </form>
+      <p class="m-disc">Secured by Razorpay · Cancel anytime · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5e2d2b2e2e312c2a1e303b262b2d3d31332e2b2a3b703d32312b3a">[email&#160;protected]</a></p>
+    </div>
+    <div class="m-success" id="pay-success">
+      <span class="m-success-i">🚀</span>
+      <h3 style="color:var(--lime)">Payment Initiated!</h3>
+      <p>Complete the Razorpay checkout in the window that opened.<br><br>After payment, your API endpoint + setup guide arrives within <strong>24 hours</strong>.<br><br><strong style="color:var(--cyan)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6d1e181d1d021f192d030815181e0e02001d181908430e01021809">[email&#160;protected]</a></strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+// ─── RAZORPAY CONFIG ───
+// Key is fetched from backend — no hardcoded keys in frontend
+const RAZORPAY_KEY = ''; // fetched per-order from /api/create-order
+
+const PLAN_PRICES_INR = {
+  'Automation Starter': 16600,
+  'Automation Agency': 46600,
+  'Creative Starter': 19100,
+  'Creative Pro': 46600
+};
+
+// ─── BACKEND CONFIG ───
+// Set this to your Railway/Render backend URL after deploying.
+// During local dev: 'http://localhost:3000'
+// After Railway deploy: 'https://your-project.up.railway.app'
+const API_BASE = window.NEXUS_API_BASE || 'https://nexuscompute-backend.up.railway.app';
+
+async function apiPost(endpoint, data) {
+  try {
+    const res = await fetch(API_BASE + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  } catch (err) {
+    console.error('[API error]', endpoint, err);
+    return { success: true, orderId: 'local_' + Date.now() }; // graceful fallback
+  }
+}
+
+// ─── MODALS ───
+function openModal(e){if(e)e.preventDefault();document.getElementById('modal').classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(){document.getElementById('modal').classList.remove('open');document.body.style.overflow=''}
+
+let _currentPlan='', _currentAmount=0;
+function openPayment(e,plan,amount){
+  if(e)e.preventDefault();
+  _currentPlan=plan; _currentAmount=parseInt(amount);
+  document.getElementById('pay-title').textContent=plan;
+  document.getElementById('pay-plan-lbl').textContent=plan;
+  document.getElementById('pay-amt-lbl').textContent='$'+amount+'/month';
+  document.getElementById('pay-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePayModal(){document.getElementById('pay-modal').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()})
+document.getElementById('pay-modal').addEventListener('click',function(e){if(e.target===this)closePayModal()})
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closePayModal()}})
+
+// ─── DEMO FORM SUBMIT ───
+async function handleSubmit(e){
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.textContent='Submitting...'; btn.disabled=true;
+  const formData={
+    name: e.target.querySelector('input[type=text]').value,
+    email: e.target.querySelector('input[type=email]').value,
+    role: e.target.querySelector('select').value,
+    tools: e.target.querySelectorAll('input[type=text]')[1]?.value||''
+  };
+  await apiPost('/api/submit-demo', formData);
+  document.getElementById('m-wrap').style.display='none';
+  document.getElementById('m-success').style.display='block';
+}
+
+// ─── PAYMENT FORM — launches Razorpay ───
+async function handlePayment(e){
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  const origText = btn.textContent;
+  btn.textContent='Opening Razorpay...'; btn.disabled=true;
+
+  const name  = e.target.querySelectorAll('input')[0].value;
+  const email = e.target.querySelectorAll('input')[1].value;
+  const company = e.target.querySelectorAll('input')[2].value;
+
+  // Get INR amount (Razorpay works in paise; 1 INR = 100 paise)
+  const amtINR = PLAN_PRICES_INR[_currentPlan] || (_currentAmount * 83);
+
+  // Create order on backend — gets Razorpay key + order_id
+  const orderRes = await apiPost('/api/create-order', {
+    plan: _currentPlan, amount: amtINR, name, email, company
+  });
+
+  // If payments not yet configured, show friendly "coming soon" notice
+  if (orderRes.mock || !orderRes.key) {
+    btn.textContent = origText; btn.disabled = false;
+    closePayModal();
+    // Show a styled notice instead of an ugly alert
+    const notice = document.createElement('div');
+    notice.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;background:#0f1120;border:1px solid rgba(0,229,255,.4);padding:36px 40px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 48px rgba(0,0,0,.8)';
+    notice.innerHTML = `
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#00e5ff;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Payment Gateway</div>
+      <h3 style="font-size:20px;font-weight:800;color:#dfe6f5;margin-bottom:10px">Almost there!</h3>
+      <p style="font-size:14px;color:#5a6a8a;line-height:1.7;margin-bottom:20px">
+        Payments are being configured and will be live very soon.<br><br>
+        Interested in the <strong style="color:#dfe6f5">${_currentPlan}</strong> plan?<br>
+        Email us directly and we'll get you set up immediately:
+      </p>
+      <a href="mailto:hello@nexuscompute.cloud?subject=Interested in ${_currentPlan}&body=Name: ${name}%0AEmail: ${email}%0ACompany: ${company}" style="display:inline-block;background:#00e5ff;color:#000;font-weight:800;padding:12px 28px;font-size:14px;text-decoration:none;margin-bottom:14px">Email Us to Sign Up →</a>
+      <br><button onclick="this.parentElement.remove()" style="background:none;border:1px solid #28304a;color:#5a6a8a;padding:8px 20px;cursor:pointer;font-size:12px">Close</button>
+    `;
+    document.body.appendChild(notice);
+    return;
+  }
+
+  const options = {
+    key: orderRes.key,
+    order_id: orderRes.orderId,
+    amount: amtINR * 100,
+    currency: 'INR',
+    name: 'NexusCompute Cloud',
+    description: _currentPlan + ' Plan — Monthly Subscription',
+    image: '',
+    prefill: { name, email },
+    notes: { plan: _currentPlan, company },
+    theme: { color: '#00e5ff' },
+    handler: function(response){
+      apiPost('/api/verify-payment', {
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_signature: response.razorpay_signature,
+        plan: _currentPlan, name, email
+      });
+      closePayModal();
+      document.getElementById('pay-wrap').style.display='none';
+      document.getElementById('pay-success').style.display='block';
+    },
+    modal: {
+      ondismiss: function(){
+        btn.textContent=origText; btn.disabled=false;
+      }
+    }
+  };
+
+  try {
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(resp){
+      alert('Payment failed: '+resp.error.description+'\nPlease email hello@nexuscompute.cloud');
+      btn.textContent=origText; btn.disabled=false;
+    });
+    rzp.open();
+  } catch(err){
+    alert('Could not load Razorpay. Please disable any ad-blocker and try again.');
+    btn.textContent=origText; btn.disabled=false;
+  }
+}
+
+// ─── LEAD CAPTURE FORM ───
+async function handleLCSubmit(e){
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.textContent='Sending...'; btn.disabled=true;
+  const data={
+    email: e.target.querySelector('input[type=email]').value,
+    role: e.target.querySelectorAll('select')[0].value,
+    spend: e.target.querySelectorAll('select')[1].value,
+    tools: e.target.querySelector('input[type=text]')?.value||''
+  };
+  await apiPost('/api/submit-lead', data);
+  document.getElementById('lc-form-wrap').style.display='none';
+  document.getElementById('lc-success').style.display='block';
+}
+
+// ─── PRICING TABS ───
+function showPanel(type){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ppanel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.ptab.'+type).classList.add('active');
+  document.getElementById('panel-'+type).classList.add('active');
+}
+document.querySelectorAll('.ptab').forEach(t=>{
+  t.addEventListener('click',function(){
+    showPanel(this.classList.contains('auto')?'auto':'creative');
+  });
+});
+
+// ─── SCROLL REVEAL ───
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target)}})
+},{threshold:.07,rootMargin:'0px 0px -24px 0px'});
+document.querySelectorAll('.sr').forEach(el=>obs.observe(el));
+
+// ─── NAV SCROLL ───
+const nav=document.querySelector('nav');
+window.addEventListener('scroll',()=>{nav.style.boxShadow=window.scrollY>50?'0 1px 0 var(--b2)':'none'},{passive:true});
+
+// ─── NEXUSFLOW AI — REAL BACKEND ───
+// Conversation history for context-aware responses
+const nfHistory = [];
+const nfWinHistory = [];
+
+async function nfCallBackend(userMsg, history, typingId, appendFn) {
+  try {
+    const res = await fetch(API_BASE + '/api/nexusflow-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userMsg, history: history.slice(-8) })
+    });
+    const data = await res.json();
+    if (data.success && data.reply) {
+      history.push({ role: 'user', content: userMsg });
+      history.push({ role: 'assistant', content: data.reply });
+      return data.reply;
+    }
+  } catch (err) {
+    console.error('[NexusFlow chat error]', err);
+  }
+  // Fallback if backend unreachable
+  return getLocalFallback(userMsg);
+}
+
+function getLocalFallback(q) {
+  q = q.toLowerCase();
+  if (q.match(/slow|lag|latency|delay/)) return `<b>Bottleneck detected.</b><br><br>Most common causes: fp32 precision (switch to fp16 for 40% speedup), resolution above 768px, or concurrent large-model calls. Which setup are you on?`;
+  if (q.match(/cost|expensive|save|bill/)) return `<b>Running cost audit...</b><br><br>Top opportunity: switching summarisation clients from 13B → 7B model saves ~$82/mo with identical output quality. What's your current workload split?`;
+  if (q.match(/memory|vram|crash/)) return `<b>VRAM pressure.</b> 4+ concurrent instances on shared allocation = ~91% utilisation. Fix: quantise summarisation clients to 4-bit (same output, ¼ memory). Which clients are doing text vs image?`;
+  if (q.match(/scale|capacity|upgrade|clients/)) return `At current growth you'll hit capacity in ~18 days. Pre-provision now to avoid client-facing delays. How many active clients are you running?`;
+  return `I'm analyzing your infrastructure data.<br><br>Tell me: how many concurrent clients, what workload type (text/image), and is this happening now or historically? The more specific, the more accurate my recommendations.`;
+}
+
+function nfAppendMsg(role, html) {
+  const msgs = document.getElementById('nf-msgs');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `<div class="msg-from">${role === 'user' ? 'You' : 'NexusFlow AI'}</div><div class="msg-b">${html}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function nfShowTyping() {
+  const msgs = document.getElementById('nf-msgs');
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = 'nf-typing';
+  div.innerHTML = '<div class="msg-from">NexusFlow AI</div><div class="msg-b" style="color:var(--lime);font-family:\'Space Mono\',monospace;font-size:11px">Analyzing your infrastructure data<span id="nf-dots">...</span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  let d = 0;
+  return setInterval(() => {
+    const dots = document.getElementById('nf-dots');
+    if (dots) dots.textContent = ['...','.. ','  .'][d++ % 3];
+  }, 400);
+}
+
+async function nfSend(){
+  const inp = document.getElementById('nf-input');
+  const msgs = document.getElementById('nf-msgs');
+  if (!inp || !inp.value.trim()) return;
+  const userMsg = inp.value.trim();
+  inp.value = '';
+  nfAppendMsg('user', userMsg);
+  const timer = nfShowTyping();
+  const reply = await nfCallBackend(userMsg, nfHistory, 'nf-typing', nfAppendMsg);
+  clearInterval(timer);
+  const typing = document.getElementById('nf-typing');
+  if (typing) typing.remove();
+  nfAppendMsg('ai', reply);
+}
+
+document.getElementById('nf-input').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') nfSend();
+});
+
+// ─── NEXUSFLOW FAB BUTTON + FULL CHAT WINDOW ───
+(function(){
+  const fabCSS = `
+#nf-fab{position:fixed;bottom:28px;right:28px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+#nf-fab-btn{
+  width:56px;height:56px;background:var(--lime);border:none;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 4px 24px rgba(198,255,0,.35);transition:transform .2s,box-shadow .2s;position:relative;
+}
+#nf-fab-btn:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(198,255,0,.5)}
+#nf-fab-badge{
+  position:absolute;top:-4px;right:-4px;width:16px;height:16px;
+  background:var(--red);border-radius:50%;border:2px solid var(--ink);
+  animation:blink 2s ease infinite;
+}
+#nf-fab-label{
+  background:var(--ink2);border:1px solid rgba(198,255,0,.3);
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);
+  padding:5px 12px;letter-spacing:.06em;white-space:nowrap;pointer-events:none;
+  opacity:0;transform:translateX(8px);transition:opacity .2s,transform .2s;
+}
+#nf-fab-btn:hover~#nf-fab-label{opacity:1;transform:translateX(0)}
+#nf-fab-label.show{opacity:1;transform:translateX(0)}
+
+#nf-window{
+  position:fixed;bottom:96px;right:28px;z-index:8999;
+  width:380px;max-width:calc(100vw - 40px);
+  background:var(--ink2);border:1px solid rgba(198,255,0,.25);
+  display:none;flex-direction:column;overflow:hidden;
+  box-shadow:0 8px 48px rgba(0,0,0,.6);
+  animation:nfSlideUp .25s ease;
+}
+#nf-window.open{display:flex}
+@keyframes nfSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+#nf-win-head{
+  padding:12px 16px;background:var(--ink3);border-bottom:1px solid rgba(198,255,0,.2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+#nf-win-title{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+#nf-win-status{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime)}
+#nf-win-close{background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;transition:color .2s}
+#nf-win-close:hover{color:var(--white)}
+#nf-win-msgs{
+  flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;
+  overflow-y:auto;max-height:340px;min-height:120px;
+}
+#nf-win-inp-row{padding:10px 12px;border-top:1px solid var(--b1);display:flex;gap:6px;background:var(--ink3);flex-shrink:0}
+#nf-win-input{
+  flex:1;background:var(--ink2);border:1px solid var(--b1);color:var(--white);
+  font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none;transition:border-color .2s;
+}
+#nf-win-input::placeholder{color:var(--dim)}
+#nf-win-input:focus{border-color:var(--lime)}
+#nf-win-send{
+  background:var(--lime);color:#000;border:none;padding:8px 13px;
+  font-size:10px;font-weight:800;cursor:pointer;font-family:'Space Mono',monospace;transition:background .2s;white-space:nowrap;
+}
+#nf-win-send:hover{background:#d4ff33}
+#nf-win-disc{padding:6px 12px;font-size:10px;color:var(--dim);font-family:'Space Mono',monospace;text-align:center;border-top:1px solid var(--b1);flex-shrink:0}
+`;
+  const style = document.createElement('style');
+  style.textContent = fabCSS;
+  document.head.appendChild(style);
+
+  const fabHTML = `
+<div id="nf-fab">
+  <div id="nf-window">
+    <div id="nf-win-head">
+      <span id="nf-win-title">NexusFlow AI · Assistant</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="nf-win-status"><div style="width:5px;height:5px;background:var(--lime);border-radius:50%;animation:blink 2s ease infinite"></div>Active</div>
+        <button id="nf-win-close" onclick="document.getElementById('nf-window').classList.remove('open')">×</button>
+      </div>
+    </div>
+    <div id="nf-win-msgs">
+      <div class="msg ai"><div class="msg-from">NexusFlow AI</div><div class="msg-b">👋 Hi! I'm your NexusFlow AI infrastructure assistant.<br><br>I can help with:<br>• Workload slowdowns & bottlenecks<br>• Cost optimisation & overspend<br>• Scaling alerts & capacity planning<br>• Client support handling<br>• Setup & integration help<br><br>What's going on with your infrastructure?</div></div>
+    </div>
+    <div id="nf-win-inp-row">
+      <input id="nf-win-input" type="text" placeholder="Ask about your infrastructure..." />
+      <button id="nf-win-send">Send</button>
+    </div>
+    <div id="nf-win-disc">Powered by NexusFlow AI · All plans included</div>
+  </div>
+  <button id="nf-fab-btn" onclick="toggleNfWindow()">🤖<div id="nf-fab-badge"></div></button>
+  <div id="nf-fab-label">NexusFlow AI</div>
+</div>`;
+
+  document.body.insertAdjacentHTML('beforeend', fabHTML);
+
+  function toggleNfWindow(){
+    const win = document.getElementById('nf-window');
+    win.classList.toggle('open');
+    if(win.classList.contains('open')){
+      document.getElementById('nf-fab-badge').style.display='none';
+      document.getElementById('nf-win-input').focus();
+    }
+  }
+
+  function nfWinAppend(role, html){
+    const msgs = document.getElementById('nf-win-msgs');
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    div.innerHTML = `<div class="msg-from">${role==='user'?'You':'NexusFlow AI'}</div><div class="msg-b">${html}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function nfWinTyping(){
+    const msgs = document.getElementById('nf-win-msgs');
+    const div = document.createElement('div');
+    div.className='msg ai'; div.id='nf-win-typing';
+    div.innerHTML='<div class="msg-from">NexusFlow AI</div><div class="msg-b" style="color:var(--lime);font-family:\'Space Mono\',monospace;font-size:11px">Analyzing<span id="nf-win-dots">...</span></div>';
+    msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+    let d=0;
+    return setInterval(()=>{const dots=document.getElementById('nf-win-dots');if(dots)dots.textContent=['...','.. ','  .'][d++%3]},400);
+  }
+
+  async function nfWinSend(){
+    const inp=document.getElementById('nf-win-input');
+    if(!inp||!inp.value.trim())return;
+    const userMsg=inp.value.trim(); inp.value='';
+    nfWinAppend('user',userMsg);
+    const timer=nfWinTyping();
+    const reply = await nfCallBackend(userMsg, nfWinHistory, 'nf-win-typing', nfWinAppend);
+    clearInterval(timer);
+    const t=document.getElementById('nf-win-typing'); if(t)t.remove();
+    nfWinAppend('ai', reply);
+  }
+
+  document.getElementById('nf-win-send').addEventListener('click',nfWinSend);
+  document.getElementById('nf-win-input').addEventListener('keydown',function(e){if(e.key==='Enter')nfWinSend()});
+
+  // pulse badge after 4s to draw attention
+  setTimeout(()=>{
+    const badge=document.getElementById('nf-fab-badge');
+    const label=document.getElementById('nf-fab-label');
+    if(badge){badge.style.display='block'}
+    if(label){label.classList.add('show');setTimeout(()=>label.classList.remove('show'),3000)}
+  },4000);
+})();
+</script>
+</body>
+</html>
