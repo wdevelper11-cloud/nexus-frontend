@@ -1784,5 +1784,33 @@ function toggleNfWindow() {
   }
 }
 </script>
+  <div id="nexusflow-window" style="
+  display:none;
+  position:fixed;
+  bottom:80px;
+  right:20px;
+  width:300px;
+  height:400px;
+  background:white;
+  border-radius:10px;
+  box-shadow:0 0 15px rgba(0,0,0,0.2);
+  z-index:9999;
+  padding:10px;
+">
+  <h3>NexusFlow AI 🤖</h3>
+  <div id="chat-content" style="height:300px; overflow:auto;"></div>
+  <input id="chat-input" placeholder="Type message..." style="width:100%;" />
+</div>
+  <script>
+function toggleNfWindow() {
+  const el = document.getElementById("nexusflow-window");
+
+  if (el.style.display === "none" || el.style.display === "") {
+    el.style.display = "block";
+  } else {
+    el.style.display = "none";
+  }
+}
+</script>
 </body>
 </html>
