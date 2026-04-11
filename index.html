@@ -1710,7 +1710,7 @@ document.getElementById('nf-input').addEventListener('keydown', function(e){
     </div>
     <div id="nf-win-disc">Powered by NexusFlow AI · All plans included</div>
   </div>
-  <button id="nf-fab-btn" onclick="toggleNfWindow()">🤖<div id="nf-fab-badge"></div></button>
+ <button id="nf-fab-btn" onclick="document.getElementById('nf-window').classList.toggle('open');document.getElementById('nf-fab-badge').style.display='none';document.getElementById('nf-win-input').focus();">🤖<div id="nf-fab-badge"></div></button>
   <div id="nf-fab-label">NexusFlow AI</div>
 </div>`;
 
