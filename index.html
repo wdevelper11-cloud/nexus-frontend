@@ -1628,145 +1628,538 @@ document.getElementById('nf-input').addEventListener('keydown', function(e){
 });
 
 // ─── NEXUSFLOW FAB BUTTON + FULL CHAT WINDOW ───
+// ─── NEXUSFLOW AI — COMBINED FAB + 3-PANEL DASHBOARD ───
+// Replace the entire existing IIFE block (function(){...})() with this
+// Also works as a drop-in — paste before </body>
+
 (function(){
-  const fabCSS = `
-#nf-fab{position:fixed;bottom:28px;right:28px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+
+const API_BASE = window.NEXUS_API_BASE || 'https://nexus-backend1-1.onrender.com';
+const nfHistory = [];
+
+// ── STYLES ──
+const css = `
+#nf-fab-wrap{
+  position:fixed;bottom:28px;right:28px;z-index:9000;
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px;
+}
 #nf-fab-btn{
-  width:56px;height:56px;background:var(--lime);border:none;border-radius:50%;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:22px;
-  box-shadow:0 4px 24px rgba(198,255,0,.35);transition:transform .2s,box-shadow .2s;position:relative;
+  width:56px;height:56px;background:#c6ff00;border-radius:50%;border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:22px;position:relative;
+  box-shadow:0 4px 24px rgba(198,255,0,.35);
+  transition:transform .2s,box-shadow .2s;
 }
 #nf-fab-btn:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(198,255,0,.5)}
 #nf-fab-badge{
   position:absolute;top:-4px;right:-4px;width:16px;height:16px;
-  background:var(--red);border-radius:50%;border:2px solid var(--ink);
-  animation:blink 2s ease infinite;
+  background:#ff3b5c;border-radius:50%;border:2px solid #06070f;
+  animation:nfBlink 2s ease infinite;display:none;
 }
 #nf-fab-label{
-  background:var(--ink2);border:1px solid rgba(198,255,0,.3);
-  font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);
-  padding:5px 12px;letter-spacing:.06em;white-space:nowrap;pointer-events:none;
-  opacity:0;transform:translateX(8px);transition:opacity .2s,transform .2s;
+  background:#0a0c18;border:1px solid rgba(198,255,0,.3);
+  font-family:'Space Mono',monospace;font-size:10px;color:#c6ff00;
+  padding:5px 12px;letter-spacing:.06em;white-space:nowrap;
+  opacity:0;transform:translateX(8px);
+  transition:opacity .2s,transform .2s;pointer-events:none;
 }
-#nf-fab-btn:hover~#nf-fab-label{opacity:1;transform:translateX(0)}
-#nf-fab-label.show{opacity:1;transform:translateX(0)}
+#nf-fab-label.nf-show{opacity:1;transform:translateX(0)}
 
-#nf-window{
-  position:fixed;bottom:96px;right:28px;z-index:8999;
-  width:380px;max-width:calc(100vw - 40px);
-  background:var(--ink2);border:1px solid rgba(198,255,0,.25);
-  display:none;flex-direction:column;overflow:hidden;
-  box-shadow:0 8px 48px rgba(0,0,0,.6);
-  animation:nfSlideUp .25s ease;
+#nf-overlay{
+  position:fixed;inset:0;z-index:8999;
+  background:rgba(0,0,0,.65);
+  display:flex;align-items:flex-end;justify-content:flex-end;
+  padding:20px;
+  opacity:0;pointer-events:none;
+  transition:opacity .25s ease;
 }
-#nf-window.open{display:flex}
-@keyframes nfSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-#nf-win-head{
-  padding:12px 16px;background:var(--ink3);border-bottom:1px solid rgba(198,255,0,.2);
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+#nf-overlay.nf-open{opacity:1;pointer-events:all}
+
+#nf-dashboard{
+  width:900px;max-width:calc(100vw - 40px);
+  height:520px;max-height:calc(100vh - 100px);
+  background:#0a0c18;
+  border:1px solid rgba(198,255,0,.2);
+  border-radius:16px;
+  display:grid;
+  grid-template-columns:180px 1fr 200px;
+  overflow:hidden;
+  transform:translateY(24px);opacity:0;
+  transition:transform .25s ease,opacity .25s ease;
 }
-#nf-win-title{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-#nf-win-status{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime)}
-#nf-win-close{background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;transition:color .2s}
-#nf-win-close:hover{color:var(--white)}
-#nf-win-msgs{
-  flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;
-  overflow-y:auto;max-height:340px;min-height:120px;
+#nf-overlay.nf-open #nf-dashboard{transform:translateY(0);opacity:1}
+
+#nf-sidebar{
+  background:#06070f;border-right:1px solid #1a1e32;
+  display:flex;flex-direction:column;padding:14px 10px;gap:3px;
+  overflow-y:auto;
 }
-#nf-win-inp-row{padding:10px 12px;border-top:1px solid var(--b1);display:flex;gap:6px;background:var(--ink3);flex-shrink:0}
-#nf-win-input{
-  flex:1;background:var(--ink2);border:1px solid var(--b1);color:var(--white);
-  font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none;transition:border-color .2s;
+.nf-sidebar-logo{
+  font-family:'Space Mono',monospace;font-size:11px;font-weight:700;
+  color:#c6ff00;padding:4px 6px 12px;border-bottom:1px solid #1a1e32;
+  margin-bottom:8px;display:flex;align-items:center;gap:7px;
 }
-#nf-win-input::placeholder{color:var(--dim)}
-#nf-win-input:focus{border-color:var(--lime)}
-#nf-win-send{
-  background:var(--lime);color:#000;border:none;padding:8px 13px;
-  font-size:10px;font-weight:800;cursor:pointer;font-family:'Space Mono',monospace;transition:background .2s;white-space:nowrap;
+.nf-logo-dot{width:8px;height:8px;border-radius:50%;background:#c6ff00;flex-shrink:0}
+.nf-sec-label{
+  font-size:9px;color:#28304a;text-transform:uppercase;
+  letter-spacing:1px;padding:8px 6px 3px;font-family:'Space Mono',monospace;
 }
-#nf-win-send:hover{background:#d4ff33}
-#nf-win-disc{padding:6px 12px;font-size:10px;color:var(--dim);font-family:'Space Mono',monospace;text-align:center;border-top:1px solid var(--b1);flex-shrink:0}
+.nf-nav-item{
+  padding:8px 10px;border-radius:8px;font-size:12px;
+  color:#5a6a8a;cursor:pointer;display:flex;align-items:center;
+  gap:8px;transition:all .15s;
+}
+.nf-nav-item:hover{background:#141728;color:#dfe6f5}
+.nf-nav-item.nf-active{background:rgba(198,255,0,.1);color:#c6ff00}
+.nf-nav-icon{
+  width:14px;height:14px;flex-shrink:0;opacity:0.5;
+}
+.nf-plan-widget{
+  margin-top:auto;background:#141728;border:1px solid #1a1e32;
+  border-radius:10px;padding:11px;
+}
+.nf-pw-label{
+  font-size:9px;color:#28304a;text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:5px;font-family:'Space Mono',monospace;
+}
+.nf-pw-name{
+  font-size:12px;font-weight:600;color:#c6ff00;
+  display:flex;align-items:center;gap:6px;margin-bottom:7px;
+}
+.nf-pw-active-dot{width:6px;height:6px;border-radius:50%;background:#c6ff00;animation:nfBlink 1.5s infinite}
+.nf-pw-bar{height:3px;background:#1a1e32;border-radius:3px;margin-bottom:5px}
+.nf-pw-fill{height:3px;background:#c6ff00;border-radius:3px;width:65%;transition:width 1s}
+.nf-pw-meta{font-size:10px;color:#28304a;font-family:'Space Mono',monospace}
+
+#nf-chat{display:flex;flex-direction:column;overflow:hidden;background:#06070f}
+#nf-chat-head{
+  background:#0a0c18;border-bottom:1px solid #1a1e32;
+  padding:12px 16px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;
+}
+.nf-ch-info{display:flex;align-items:center;gap:10px}
+.nf-ch-av{
+  width:32px;height:32px;border-radius:9px;
+  background:linear-gradient(135deg,#c6ff00,#00e5ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;
+}
+.nf-ch-name{font-size:13px;font-weight:700;color:#dfe6f5;font-family:'Outfit',sans-serif}
+.nf-ch-sub{
+  font-size:10px;color:#c6ff00;display:flex;align-items:center;
+  gap:4px;font-family:'Space Mono',monospace;
+}
+.nf-ch-subdot{width:5px;height:5px;border-radius:50%;background:#c6ff00;animation:nfBlink 2s infinite}
+.nf-ch-actions{display:flex;gap:7px;align-items:center}
+.nf-ch-clearbtn{
+  background:transparent;border:1px solid #1a1e32;color:#5a6a8a;
+  border-radius:7px;padding:5px 11px;font-size:11px;cursor:pointer;
+  font-family:'Outfit',sans-serif;transition:all .15s;
+}
+.nf-ch-clearbtn:hover{color:#dfe6f5;border-color:#5a6a8a}
+.nf-ch-close{
+  background:none;border:none;color:#28304a;
+  font-size:18px;cursor:pointer;line-height:1;padding:3px;
+  transition:color .15s;
+}
+.nf-ch-close:hover{color:#dfe6f5}
+
+#nf-msgs{
+  flex:1;padding:14px;display:flex;flex-direction:column;
+  gap:11px;overflow-y:auto;scrollbar-width:thin;
+  scrollbar-color:#1a1e32 transparent;
+}
+.nfm{display:flex;gap:9px;animation:nfFadeUp .25s ease}
+.nfm.user{flex-direction:row-reverse}
+.nfm-av{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#c6ff00,#00e5ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#000;
+}
+.nfm.user .nfm-av{background:#141728;border:1px solid #1a1e32;color:#5a6a8a}
+.nfm-body{max-width:76%}
+.nfm-from{
+  font-size:9px;color:#28304a;font-family:'Space Mono',monospace;
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;
+}
+.nfm.user .nfm-from{text-align:right}
+.nfm-b{
+  padding:10px 13px;font-size:12px;line-height:1.6;
+  border-radius:12px;font-family:'Outfit',sans-serif;
+}
+.nfm.ai .nfm-b{
+  background:#0f1120;border:1px solid #1a1e32;color:#dfe6f5;
+  border-top-left-radius:3px;
+}
+.nfm.user .nfm-b{
+  background:rgba(198,255,0,.08);border:1px solid rgba(198,255,0,.18);
+  color:#c6ff00;border-top-right-radius:3px;
+}
+.nfm.ai .nfm-b b{color:#c6ff00}
+.nf-typing-dots{display:flex;gap:4px;align-items:center;padding:10px 13px;
+  background:#0f1120;border:1px solid #1a1e32;border-radius:12px;
+  border-top-left-radius:3px;width:fit-content;}
+.nf-typing-dots span{
+  width:6px;height:6px;border-radius:50%;background:#5a6a8a;
+  animation:nfBounce 1.2s infinite;
+}
+.nf-typing-dots span:nth-child(2){animation-delay:.2s}
+.nf-typing-dots span:nth-child(3){animation-delay:.4s}
+
+#nf-chips{
+  padding:0 14px 10px;display:flex;gap:6px;
+  flex-wrap:wrap;flex-shrink:0;
+}
+.nf-chip{
+  background:#141728;border:1px solid #1a1e32;color:#5a6a8a;
+  border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;
+  font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;
+}
+.nf-chip:hover{border-color:#c6ff00;color:#c6ff00}
+
+#nf-inp-bar{
+  padding:11px 12px;border-top:1px solid #1a1e32;
+  background:#0a0c18;display:flex;gap:7px;flex-shrink:0;
+}
+#nf-input{
+  flex:1;background:#141728;border:1px solid #1a1e32;color:#dfe6f5;
+  font-size:12px;padding:9px 12px;border-radius:9px;outline:none;
+  transition:border-color .15s;font-family:'Outfit',sans-serif;
+}
+#nf-input::placeholder{color:#28304a}
+#nf-input:focus{border-color:#c6ff00}
+#nf-send-btn{
+  background:#c6ff00;color:#000;border:none;border-radius:9px;
+  padding:9px 14px;font-size:11px;font-weight:800;cursor:pointer;
+  font-family:'Space Mono',monospace;transition:opacity .15s;
+}
+#nf-send-btn:hover{opacity:.85}
+
+#nf-right{
+  background:#06070f;border-left:1px solid #1a1e32;
+  display:flex;flex-direction:column;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:#1a1e32 transparent;
+}
+.nf-rs{padding:13px;border-bottom:1px solid #1a1e32}
+.nf-rs-title{
+  font-size:9px;text-transform:uppercase;letter-spacing:1.2px;
+  color:#28304a;font-family:'Space Mono',monospace;margin-bottom:10px;
+}
+.nf-pc{
+  background:#141728;border:1px solid #1a1e32;border-radius:10px;
+  padding:11px;margin-bottom:7px;cursor:pointer;
+  transition:border-color .15s;position:relative;overflow:hidden;
+}
+.nf-pc:hover{border-color:rgba(198,255,0,.3)}
+.nf-pc.nf-hot{border-color:rgba(198,255,0,.25)}
+.nf-pc.nf-hot::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:2px;background:#c6ff00;
+}
+.nf-pc-name{
+  font-size:12px;font-weight:600;color:#dfe6f5;
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:5px;margin-bottom:3px;
+}
+.nf-pc-tag{
+  font-size:9px;background:rgba(198,255,0,.12);
+  color:#c6ff00;padding:2px 6px;border-radius:5px;
+}
+.nf-pc-desc{font-size:10px;color:#5a6a8a;margin-bottom:7px;line-height:1.5}
+.nf-pc-price{
+  font-family:'Space Mono',monospace;font-size:15px;
+  font-weight:700;color:#c6ff00;
+}
+.nf-pc-price span{font-size:10px;font-weight:400;color:#28304a}
+.nf-pc-btn{
+  width:100%;margin-top:8px;background:#c6ff00;color:#000;
+  border:none;border-radius:7px;padding:7px;font-size:10px;
+  font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;
+  transition:opacity .15s;
+}
+.nf-pc-btn:hover{opacity:.85}
+.nf-pc-btn.nf-ghost{
+  background:transparent;color:#5a6a8a;
+  border:1px solid #1a1e32;font-weight:400;
+}
+.nf-pc-btn.nf-ghost:hover{color:#dfe6f5;border-color:#c6ff00}
+.nf-stat-row{
+  display:flex;justify-content:space-between;
+  font-size:11px;color:#5a6a8a;padding:4px 0;
+}
+.nf-stat-val{color:#dfe6f5;font-family:'Space Mono',monospace;font-size:10px}
+.nf-stat-val.nf-accent{color:#c6ff00}
+
+@keyframes nfBlink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes nfBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+@keyframes nfFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+@media(max-width:700px){
+  #nf-dashboard{grid-template-columns:1fr;height:90vh}
+  #nf-sidebar,#nf-right{display:none}
+}
 `;
-  const style = document.createElement('style');
-  style.textContent = fabCSS;
-  document.head.appendChild(style);
 
-  const fabHTML = `
-<div id="nf-fab">
-  <div id="nf-window">
-    <div id="nf-win-head">
-      <span id="nf-win-title">NexusFlow AI · Assistant</span>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div id="nf-win-status"><div style="width:5px;height:5px;background:var(--lime);border-radius:50%;animation:blink 2s ease infinite"></div>Active</div>
-        <button id="nf-win-close" onclick="document.getElementById('nf-window').classList.remove('open')">×</button>
+const style = document.createElement('style');
+style.textContent = css;
+document.head.appendChild(style);
+
+// ── HTML ──
+const html = `
+<div id="nf-overlay" onclick="nfOverlayClick(event)">
+  <div id="nf-dashboard">
+
+    <div id="nf-sidebar">
+      <div class="nf-sidebar-logo">
+        <div class="nf-logo-dot"></div>NexusFlow AI
+      </div>
+      <div class="nf-sec-label">Workspace</div>
+      <div class="nf-nav-item nf-active">
+        <svg class="nf-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI Assistant
+      </div>
+      <div class="nf-nav-item">
+        <svg class="nf-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Plans & Pricing
+      </div>
+      <div class="nf-nav-item">
+        <svg class="nf-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Automation Engine
+      </div>
+      <div class="nf-nav-item">
+        <svg class="nf-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        Creative Engine
+      </div>
+      <div class="nf-sec-label" style="margin-top:6px">Account</div>
+      <div class="nf-nav-item">
+        <svg class="nf-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Billing
+      </div>
+      <div class="nf-nav-item">
+        <svg class="nf-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Settings
+      </div>
+      <div class="nf-plan-widget">
+        <div class="nf-pw-label">NexusFlow Status</div>
+        <div class="nf-pw-name">
+          <div class="nf-pw-active-dot"></div>AI Active
+        </div>
+        <div class="nf-pw-bar"><div class="nf-pw-fill"></div></div>
+        <div class="nf-pw-meta">Powered by real AI · All plans</div>
       </div>
     </div>
-    <div id="nf-win-msgs">
-      <div class="msg ai"><div class="msg-from">NexusFlow AI</div><div class="msg-b">👋 Hi! I'm your NexusFlow AI infrastructure assistant.<br><br>I can help with:<br>• Workload slowdowns & bottlenecks<br>• Cost optimisation & overspend<br>• Scaling alerts & capacity planning<br>• Client support handling<br>• Setup & integration help<br><br>What's going on with your infrastructure?</div></div>
+
+    <div id="nf-chat">
+      <div id="nf-chat-head">
+        <div class="nf-ch-info">
+          <div class="nf-ch-av">⚡</div>
+          <div>
+            <div class="nf-ch-name">NexusFlow AI</div>
+            <div class="nf-ch-sub">
+              <div class="nf-ch-subdot"></div>
+              Infrastructure intelligence · Always active
+            </div>
+          </div>
+        </div>
+        <div class="nf-ch-actions">
+          <button class="nf-ch-clearbtn" onclick="nfClearChat()">Clear</button>
+          <button class="nf-ch-close" onclick="nfClose()">&#x2715;</button>
+        </div>
+      </div>
+
+      <div id="nf-msgs">
+        <div class="nfm ai">
+          <div class="nfm-av">⚡</div>
+          <div class="nfm-body">
+            <div class="nfm-from">NexusFlow AI</div>
+            <div class="nfm-b">Hey! I'm your NexusFlow AI assistant — I help agency owners and creators find the right compute plan, answer technical questions, and get you running in 24 hours. What are you building?</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="nf-chips">
+        <div class="nf-chip" onclick="nfQuick('I run an AI automation agency with clients on n8n')">Agency on n8n</div>
+        <div class="nf-chip" onclick="nfQuick('I create AI images with ComfyUI and Stable Diffusion')">ComfyUI creator</div>
+        <div class="nf-chip" onclick="nfQuick('Compare all your plans and pricing')">Compare plans</div>
+        <div class="nf-chip" onclick="nfQuick('How does the 24 hour setup work?')">How setup works</div>
+      </div>
+
+      <div id="nf-inp-bar">
+        <input id="nf-input" placeholder="Ask about plans, pricing, integrations, setup…" onkeydown="if(event.key==='Enter')nfSend()"/>
+        <button id="nf-send-btn" onclick="nfSend()">Send →</button>
+      </div>
     </div>
-    <div id="nf-win-inp-row">
-      <input id="nf-win-input" type="text" placeholder="Ask about your infrastructure..." />
-      <button id="nf-win-send">Send</button>
+
+    <div id="nf-right">
+      <div class="nf-rs">
+        <div class="nf-rs-title">Plans</div>
+        <div class="nf-pc nf-hot">
+          <div class="nf-pc-name">Automation Agency <span class="nf-pc-tag">Popular</span></div>
+          <div class="nf-pc-desc">Dedicated compute · n8n + Make · Slack support</div>
+          <div class="nf-pc-price">$559 <span>/mo</span></div>
+          <button class="nf-pc-btn" onclick="nfClose();openPayment(null,'Automation Agency','559')">Get Started</button>
+        </div>
+        <div class="nf-pc">
+          <div class="nf-pc-name">Automation Starter</div>
+          <div class="nf-pc-desc">Shared cluster · 200K calls/mo</div>
+          <div class="nf-pc-price">$199 <span>/mo</span></div>
+          <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Automation Starter','199')">Select</button>
+        </div>
+        <div class="nf-pc">
+          <div class="nf-pc-name">Creative Pro</div>
+          <div class="nf-pc-desc">SDXL · FLUX · ComfyUI · Zero queue</div>
+          <div class="nf-pc-price">$559 <span>/mo</span></div>
+          <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Creative Pro','559')">Select</button>
+        </div>
+        <div class="nf-pc">
+          <div class="nf-pc-name">Creative Starter</div>
+          <div class="nf-pc-desc">Shared GPU · SDXL + FLUX</div>
+          <div class="nf-pc-price">$229 <span>/mo</span></div>
+          <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Creative Starter','229')">Select</button>
+        </div>
+      </div>
+      <div class="nf-rs">
+        <div class="nf-rs-title">Platform Stats</div>
+        <div class="nf-stat-row"><span>Uptime</span><span class="nf-stat-val nf-accent">99.9%</span></div>
+        <div class="nf-stat-row"><span>Avg response</span><span class="nf-stat-val">380ms</span></div>
+        <div class="nf-stat-row"><span>Active clients</span><span class="nf-stat-val">247+</span></div>
+        <div class="nf-stat-row"><span>Setup time</span><span class="nf-stat-val nf-accent">24 hrs</span></div>
+        <div class="nf-stat-row"><span>Rate limits</span><span class="nf-stat-val nf-accent">Zero</span></div>
+      </div>
     </div>
-    <div id="nf-win-disc">Powered by NexusFlow AI · All plans included</div>
+
   </div>
- <button id="nf-fab-btn" onclick="document.getElementById('nf-window').classList.toggle('open');document.getElementById('nf-fab-badge').style.display='none';document.getElementById('nf-win-input').focus();">🤖<div id="nf-fab-badge"></div></button>
+</div>
+
+<div id="nf-fab-wrap">
   <div id="nf-fab-label">NexusFlow AI</div>
-</div>`;
+  <button id="nf-fab-btn" onclick="nfToggle()">
+    🤖
+    <div id="nf-fab-badge"></div>
+  </button>
+</div>
+`;
 
-  document.body.insertAdjacentHTML('beforeend', fabHTML);
+document.body.insertAdjacentHTML('beforeend', html);
 
-  function toggleNfWindow(){
-    const win = document.getElementById('nf-window');
-    win.classList.toggle('open');
-    if(win.classList.contains('open')){
-      document.getElementById('nf-fab-badge').style.display='none';
-      document.getElementById('nf-win-input').focus();
-    }
+// ── FUNCTIONS ──
+window.nfToggle = function(){
+  const o = document.getElementById('nf-overlay');
+  o.classList.toggle('nf-open');
+  document.getElementById('nf-fab-badge').style.display = 'none';
+  if(o.classList.contains('nf-open')){
+    setTimeout(()=>{
+      const inp = document.getElementById('nf-input');
+      if(inp) inp.focus();
+    },300);
   }
+};
 
-  function nfWinAppend(role, html){
-    const msgs = document.getElementById('nf-win-msgs');
-    const div = document.createElement('div');
-    div.className = 'msg ' + role;
-    div.innerHTML = `<div class="msg-from">${role==='user'?'You':'NexusFlow AI'}</div><div class="msg-b">${html}</div>`;
-    msgs.appendChild(div);
+window.nfClose = function(){
+  document.getElementById('nf-overlay').classList.remove('nf-open');
+};
+
+window.nfOverlayClick = function(e){
+  if(e.target === document.getElementById('nf-overlay')) nfClose();
+};
+
+window.nfClearChat = function(){
+  nfHistory.length = 0;
+  const msgs = document.getElementById('nf-msgs');
+  msgs.innerHTML = `<div class="nfm ai">
+    <div class="nfm-av">⚡</div>
+    <div class="nfm-body">
+      <div class="nfm-from">NexusFlow AI</div>
+      <div class="nfm-b">Chat cleared. What can I help you with?</div>
+    </div>
+  </div>`;
+  document.getElementById('nf-chips').style.display = 'flex';
+};
+
+window.nfQuick = function(text){
+  document.getElementById('nf-input').value = text;
+  document.getElementById('nf-chips').style.display = 'none';
+  nfSend();
+};
+
+window.nfSend = async function(){
+  const inp = document.getElementById('nf-input');
+  const text = inp.value.trim();
+  if(!text) return;
+  inp.value = '';
+  document.getElementById('nf-chips').style.display = 'none';
+
+  const msgs = document.getElementById('nf-msgs');
+
+  const userDiv = document.createElement('div');
+  userDiv.className = 'nfm user';
+  userDiv.innerHTML = `<div class="nfm-av">U</div><div class="nfm-body"><div class="nfm-from">You</div><div class="nfm-b">${text}</div></div>`;
+  msgs.appendChild(userDiv);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'nfm ai';
+  typingDiv.id = 'nf-typing';
+  typingDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">NexusFlow AI</div><div class="nf-typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(typingDiv);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  nfHistory.push({role:'user',content:text});
+
+  try {
+    const res = await fetch(API_BASE + '/api/nexusflow-chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:text, history:nfHistory.slice(-8)})
+    });
+    const data = await res.json();
+    const reply = (data.success && data.reply) ? data.reply : nfFallback(text);
+    nfHistory.push({role:'assistant',content:reply});
+
+    const t = document.getElementById('nf-typing');
+    if(t) t.remove();
+
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'nfm ai';
+    aiDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">NexusFlow AI</div><div class="nfm-b">${reply}</div></div>`;
+    msgs.appendChild(aiDiv);
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch(err){
+    const t = document.getElementById('nf-typing');
+    if(t) t.remove();
+    const reply = nfFallback(text);
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'nfm ai';
+    aiDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">NexusFlow AI</div><div class="nfm-b">${reply}</div></div>`;
+    msgs.appendChild(aiDiv);
     msgs.scrollTop = msgs.scrollHeight;
   }
+};
 
-  function nfWinTyping(){
-    const msgs = document.getElementById('nf-win-msgs');
-    const div = document.createElement('div');
-    div.className='msg ai'; div.id='nf-win-typing';
-    div.innerHTML='<div class="msg-from">NexusFlow AI</div><div class="msg-b" style="color:var(--lime);font-family:\'Space Mono\',monospace;font-size:11px">Analyzing<span id="nf-win-dots">...</span></div>';
-    msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
-    let d=0;
-    return setInterval(()=>{const dots=document.getElementById('nf-win-dots');if(dots)dots.textContent=['...','.. ','  .'][d++%3]},400);
+function nfFallback(q){
+  q = q.toLowerCase();
+  if(q.match(/slow|lag|latency/)) return `<b>Bottleneck detected.</b><br>Switch fp32 → fp16 for 40% speedup. Which model are you running?`;
+  if(q.match(/cost|expensive|price|plan/)) return `<b>Plans start at $199/mo</b> (Automation Starter) up to $559/mo (Agency/Creative Pro). All include NexusFlow AI + setup. Which workload are you running?`;
+  if(q.match(/n8n|make|zapier|agency/)) return `<b>Automation Agency at $559/mo</b> is built for you — dedicated compute, n8n + Make templates, per-client tracking, Slack support. Live in 24 hours.`;
+  if(q.match(/comfy|stable|sdxl|flux|image|creative/)) return `<b>Creative Pro at $559/mo</b> — zero queue, SDXL + FLUX + ComfyUI ready, batch 200+ images, dedicated GPU.`;
+  if(q.match(/setup|start|how|begin/)) return `Simple: <b>1)</b> Pick a plan → <b>2)</b> Pay via Razorpay → <b>3)</b> We set everything up → <b>4)</b> You get API endpoint in 24 hours. Zero DevOps required.`;
+  return `Tell me more about your workload — tools you use (n8n, ComfyUI, Make?), number of clients, and monthly AI spend. I'll recommend the exact right plan.`;
+}
+
+// ── BADGE PULSE after 4s ──
+setTimeout(()=>{
+  const badge = document.getElementById('nf-fab-badge');
+  const label = document.getElementById('nf-fab-label');
+  if(badge) badge.style.display = 'block';
+  if(label){
+    label.classList.add('nf-show');
+    setTimeout(()=>label.classList.remove('nf-show'), 3500);
   }
+}, 4000);
 
-  async function nfWinSend(){
-    const inp=document.getElementById('nf-win-input');
-    if(!inp||!inp.value.trim())return;
-    const userMsg=inp.value.trim(); inp.value='';
-    nfWinAppend('user',userMsg);
-    const timer=nfWinTyping();
-    const reply = await nfCallBackend(userMsg, nfWinHistory, 'nf-win-typing', nfWinAppend);
-    clearInterval(timer);
-    const t=document.getElementById('nf-win-typing'); if(t)t.remove();
-    nfWinAppend('ai', reply);
-  }
-
-  document.getElementById('nf-win-send').addEventListener('click',nfWinSend);
-  document.getElementById('nf-win-input').addEventListener('keydown',function(e){if(e.key==='Enter')nfWinSend()});
-
-  // pulse badge after 4s to draw attention
-  setTimeout(()=>{
-    const badge=document.getElementById('nf-fab-badge');
-    const label=document.getElementById('nf-fab-label');
-    if(badge){badge.style.display='block'}
-    if(label){label.classList.add('show');setTimeout(()=>label.classList.remove('show'),3000)}
-  },4000);
 })();
+
 </script>
 </body>
 </html>
