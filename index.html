@@ -427,10 +427,10 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
 
     <!-- TABS -->
     <div class="ptabs sr">
-      <button class="ptab active" onclick="showPanel('auto')">
+      <button class="ptab active" onclick="showPanel('auto', this)">
         ⚙️ Automation Engine
       </button>
-      <button class="ptab" onclick="showPanel('creative')">
+      <button class="ptab" onclick="showPanel('creative', this)">
         🎨 Creative Engine
       </button>
     </div>
@@ -441,83 +441,49 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
       <!-- ================= AUTOMATION ================= -->
       <div class="ppanel auto active" id="panel-auto">
 
-        <!-- AUTOMATION STARTER -->
         <div class="pc auto sr">
           <div class="p-tier">Automation Starter</div>
           <div class="p-amt">$199</div>
           <div class="p-period">/month</div>
-          <div class="p-div"></div>
-
           <ul class="p-feats">
             <li>High-capacity shared cluster</li>
             <li>Includes up to 120 compute hours/month</li>
-            <li>Standard LLM library — small + mid models</li>
+            <li>Standard LLM library</li>
             <li>OpenAI-compatible API endpoint</li>
-            <li>NexusFlow AI — basic monitoring</li>
-            <li>Email support · Setup included</li>
+            <li>NexusFlow AI monitoring</li>
+            <li>Email support</li>
           </ul>
-
-          <div class="p-note">
-            Usage is strictly capped at allocated compute hours. Workloads pause automatically when limits are reached.
-          </div>
-
           <a href="#" class="pbtn ghost"
              onclick="openPayment(event,'Automation Starter','199')">
             Get Started →
           </a>
         </div>
 
-        <!-- AUTOMATION AGENCY -->
         <div class="pc auto hot sr">
-          <div class="hot-b">Best Value</div>
           <div class="p-tier">Automation Agency</div>
           <div class="p-amt">$559</div>
           <div class="p-period">/month</div>
-          <div class="p-div"></div>
-
           <ul class="p-feats">
-            <li>Dedicated compute — reserved exclusively for you</li>
-            <li>Includes up to 300 compute hours/month</li>
-            <li>Full LLM library — large models + custom configs</li>
-            <li>Per-client workspace + usage breakdown</li>
-            <li>NexusFlow AI — full optimization suite</li>
-            <li>Direct Slack support line</li>
-            <li>n8n + Make.com starter templates included</li>
-            <li>24-hour setup guarantee</li>
+            <li>Dedicated compute</li>
+            <li>300 compute hours/month</li>
+            <li>Full LLM library</li>
+            <li>Slack support</li>
+            <li>n8n + Make templates</li>
           </ul>
-
-          <div class="p-note">
-            Dedicated capacity with defined limits. Scaling beyond requires upgrade or custom provisioning.
-          </div>
-
           <a href="#" class="pbtn as"
              onclick="openPayment(event,'Automation Agency','559')">
-            Start Running Workloads →
+            Start Running →
           </a>
         </div>
 
-        <!-- ENTERPRISE -->
         <div class="pc auto sr">
           <div class="p-tier">Enterprise</div>
-          <div class="p-amt" style="font-size:38px;line-height:1.2;padding-top:8px">
-            Custom
-          </div>
-          <div class="p-period">tailored pricing</div>
-          <div class="p-div"></div>
-
+          <div class="p-amt">Custom</div>
           <ul class="p-feats">
             <li>Multi-node provisioning</li>
-            <li>Fine-tuning infrastructure</li>
             <li>White-label API</li>
-            <li>Custom SLA + uptime commitment</li>
-            <li>Dedicated account management</li>
-            <li>Volume pricing with clear unit economics</li>
+            <li>Custom SLA</li>
           </ul>
-
-          <div class="p-note">
-            15+ clients or SaaS products with high inference volume. Let's build a custom plan.
-          </div>
-
           <a href="#" class="pbtn ghost" onclick="openModal(event)">
             Contact Us →
           </a>
@@ -528,83 +494,42 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
       <!-- ================= CREATIVE ================= -->
       <div class="ppanel creative" id="panel-creative">
 
-        <!-- CREATIVE STARTER -->
         <div class="pc creative sr">
           <div class="p-tier">Creative Starter</div>
           <div class="p-amt">$229</div>
-          <div class="p-period">/month</div>
-          <div class="p-div"></div>
-
           <ul class="p-feats">
-            <li>High-performance shared cluster</li>
-            <li>Stable Diffusion XL + FLUX support</li>
-            <li>ComfyUI + A1111 compatible</li>
-            <li>Includes up to 150 GPU hours/month</li>
-            <li>NexusFlow AI — basic monitoring</li>
-            <li>Email support · Setup included</li>
+            <li>SDXL + FLUX support</li>
+            <li>ComfyUI + A1111</li>
+            <li>150 GPU hours/month</li>
           </ul>
-
-          <div class="p-note">
-            Generation is limited to allocated GPU hours to ensure performance.
-          </div>
-
           <a href="#" class="pbtn ghost"
              onclick="openPayment(event,'Creative Starter','229')">
             Get Started →
           </a>
         </div>
 
-        <!-- CREATIVE PRO -->
         <div class="pc creative hot sr">
-          <div class="hot-b">Best Value</div>
           <div class="p-tier">Creative Pro</div>
           <div class="p-amt">$559</div>
-          <div class="p-period">/month</div>
-          <div class="p-div"></div>
-
           <ul class="p-feats">
-            <li>Dedicated creative compute — zero queue ever</li>
-            <li>Full model library — SDXL, FLUX, custom LoRA</li>
-            <li>Batch generation — 200+ images per session</li>
-            <li>Video generation pipeline support</li>
-            <li>NexusFlow AI — full optimization suite</li>
-            <li>Direct Slack support line</li>
-            <li>ComfyUI workflow templates included</li>
-            <li>24-hour setup guarantee</li>
+            <li>Zero queue dedicated GPU</li>
+            <li>Batch generation</li>
+            <li>Video pipeline support</li>
           </ul>
-
-          <div class="p-note">
-            Dedicated GPU capacity with defined limits. Extended usage requires custom scaling plans.
-          </div>
-
           <a href="#" class="pbtn cs"
              onclick="openPayment(event,'Creative Pro','559')">
             Deploy Instantly →
           </a>
         </div>
 
-        <!-- CREATIVE ENTERPRISE -->
         <div class="pc creative sr">
           <div class="p-tier">Enterprise</div>
-          <div class="p-amt" style="font-size:38px;line-height:1.2;padding-top:8px">
-            Custom
-          </div>
-          <div class="p-period">tailored pricing</div>
-          <div class="p-div"></div>
-
+          <div class="p-amt">Custom</div>
           <ul class="p-feats">
-            <li>Multi-GPU creative provisioning</li>
-            <li>Custom model deployment</li>
-            <li>White-label creative API</li>
-            <li>Bulk generation SLA</li>
-            <li>Dedicated pipeline management</li>
-            <li>Volume pricing for studios + platforms</li>
+            <li>Multi-GPU provisioning</li>
+            <li>Custom models</li>
+            <li>Bulk SLA</li>
           </ul>
-
-          <div class="p-note">
-            For AI studios, content platforms, and GenAI companies with serious throughput requirements.
-          </div>
-
           <a href="#" class="pbtn ghost" onclick="openModal(event)">
             Contact Us →
           </a>
@@ -614,18 +539,21 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
 
     </div>
 
-    <!-- FOOTER NOTES -->
+    <!-- FOOTER -->
     <div class="fair-use sr">
-      <b>Usage Policy:</b> All plans include defined compute limits. Workloads automatically pause when limits are reached.
+      <b>Usage Policy:</b> All plans include defined compute limits.
     </div>
 
     <div class="p-footer sr">
-      Founding member pricing locked in permanently for first 12 signups.
+      Founding member pricing locked in for first 12 signups.
       <span>Early clients save 25% — forever.</span>
     </div>
 
   </div>
 </section>
+
+
+  
 <!-- NEXUSFLOW AI -->
 <section class="sec" id="nexusflow">
   <div class="wrap">
@@ -1103,7 +1031,13 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 </div>`;
 
   document.body.insertAdjacentHTML('beforeend', html);
+window.showPanel = function(type, btn) {
+  document.querySelectorAll('.ppanel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + type)?.classList.add('active');
 
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+};
   window.nfToggle = function() {
     const o = document.getElementById('nf-overlay');
     const fab = document.getElementById('nf-fab-btn');
