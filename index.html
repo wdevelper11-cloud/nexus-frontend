@@ -808,6 +808,31 @@ window.addEventListener('load', async function () {
     if (authLinks) authLinks.style.display = 'block';
   }
 });
+// --- CLERK INITIALIZATION (DARK THEME + UI) ---
+window.addEventListener('load', async function () {
+  await Clerk.load({
+    appearance: {
+      baseTheme: 'dark', // 🌙 This fixes the white theme issue
+      variables: {
+        colorPrimary: '#00e5ff',    // Cyan accents
+        colorBackground: '#06070f',  // Matches your site background
+        colorText: '#dfe6f5'
+      }
+    }
+  });
+
+  const userButtonDiv = document.getElementById('user-button');
+  const authLinks = document.getElementById('auth-links');
+
+  if (Clerk.user) {
+    if (authLinks) authLinks.style.display = 'none';
+    if (userButtonDiv) Clerk.mountUserButton(userButtonDiv);
+  } else {
+    if (userButtonDiv) userButtonDiv.style.display = 'none';
+    if (authLinks) authLinks.style.display = 'block';
+  }
+});
+
 // NAV scroll glow
 const mainNav = document.getElementById('mainNav');
 window.addEventListener('scroll', () => {
