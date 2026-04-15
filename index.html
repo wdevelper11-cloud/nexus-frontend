@@ -850,9 +850,9 @@ async function handleSubmit(e) {
 async function handlePayment(e) {
   e.preventDefault();
 
-  // 1. Check if user is logged in before allowing payment
-  if (!Clerk.user) {
-    Clerk.openSignUp(); 
+  // 1. Safety Check: Only allow if logged in
+  if (!window.Clerk || !window.Clerk.user) {
+    window.Clerk.openSignUp(); 
     return;
   }
 
@@ -861,19 +861,19 @@ async function handlePayment(e) {
   btn.textContent = 'Opening Razorpay...'; 
   btn.disabled = true;
 
-  // 2. Use Clerk Data for the order (Ensures credentials go to the right email)
-  const name = Clerk.user.fullName || e.target.querySelectorAll('input')[0].value;
-  const email = Clerk.user.primaryEmailAddress.emailAddress; 
+  // 2. GET VERIFIED DATA from the login session
+  const email = window.Clerk.user.primaryEmailAddress.emailAddress; 
+  const name = window.Clerk.user.fullName || e.target.querySelectorAll('input')[0].value;
   const company = e.target.querySelectorAll('input')[2].value;
 
   const amtINR = PLAN_PRICES_INR[_currentPlan] || (_currentAmount * 83);
   
-  // Create order on your Render backend
+  // 3. Trigger the automation by sending data to your Render Backend
   const orderRes = await apiPost('/api/create-order', { 
     plan: _currentPlan, 
     amount: amtINR, 
     name, 
-    email, 
+    email, // This is the most important part for the RunPod script
     company 
   });
 
@@ -893,11 +893,11 @@ async function handlePayment(e) {
     prefill: { name, email },
     notes: { 
         plan: _currentPlan, 
-        clerkId: Clerk.user.id // Links the payment to the Clerk User ID
+        clerkId: window.Clerk.user.id 
     },
     theme: { color: '#00e5ff' },
     handler: function(response) {
-      // This sends data back to verify-payment in server.js on Render
+      // This sends the "Paid" signal to server.js
       apiPost('/api/verify-payment', { 
         razorpay_payment_id: response.razorpay_payment_id, 
         razorpay_order_id: response.razorpay_order_id, 
