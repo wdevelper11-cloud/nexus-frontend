@@ -792,44 +792,51 @@ async function apiPost(endpoint, data) {
   }
 }
 // --- CLERK INITIALIZATION ---
+// --- CLERK INITIALIZATION (FIXES DOUBLE AVATAR + INVISIBLE ICONS) ---
 window.addEventListener('load', async function () {
-  await Clerk.load();
-
-  const userButtonDiv = document.getElementById('user-button');
-  const authLinks = document.getElementById('auth-links');
-
-  if (Clerk.user) {
-    // User is logged in: Show the User Profile button and hide "Sign In"
-    if (authLinks) authLinks.style.display = 'none';
-    if (userButtonDiv) Clerk.mountUserButton(userButtonDiv);
-  } else {
-    // Not logged in: Show "Sign In"
-    if (userButtonDiv) userButtonDiv.style.display = 'none';
-    if (authLinks) authLinks.style.display = 'block';
-  }
-});
-// --- CLERK INITIALIZATION (DARK THEME + UI) ---
-window.addEventListener('load', async function () {
-  await Clerk.load({
-    appearance: {
-      baseTheme: 'dark', // 🌙 This fixes the white theme issue
-      variables: {
-        colorPrimary: '#00e5ff',    // Cyan accents
-        colorBackground: '#06070f',  // Matches your site background
-        colorText: '#dfe6f5'
+  try {
+    await Clerk.load({
+      appearance: {
+        baseTheme: 'dark',
+        variables: {
+          colorPrimary: '#00e5ff',    // Cyan accents
+          colorBackground: '#0a0c18', // Slightly lighter dark for the modal
+          colorText: '#dfe6f5',       // Bright off-white text
+          colorTextSecondary: '#94a3b8', // Grey for secondary text
+          // This fixes the invisible icons:
+          colorInputText: '#ffffff',
+          colorActionLink: '#00e5ff'
+        },
+        elements: {
+          // Custom CSS to force icons to be visible
+          userButtonPopoverActionButtonIcon: {
+            color: '#dfe6f5',
+            opacity: '0.8'
+          },
+          userButtonPopoverFooter: {
+            display: 'none' // Cleans up the "Powered by Clerk" if you want
+          }
+        }
       }
+    });
+
+    const userButtonDiv = document.getElementById('user-button');
+    const authLinks = document.getElementById('auth-links');
+
+    if (Clerk.user) {
+      if (authLinks) authLinks.style.display = 'none';
+      if (userButtonDiv) {
+        // CRITICAL: Clear the div first to stop the double-profile issue
+        userButtonDiv.innerHTML = ''; 
+        Clerk.mountUserButton(userButtonDiv);
+      }
+      console.log("NexusCompute: Identity Verified");
+    } else {
+      if (userButtonDiv) userButtonDiv.style.display = 'none';
+      if (authLinks) authLinks.style.display = 'block';
     }
-  });
-
-  const userButtonDiv = document.getElementById('user-button');
-  const authLinks = document.getElementById('auth-links');
-
-  if (Clerk.user) {
-    if (authLinks) authLinks.style.display = 'none';
-    if (userButtonDiv) Clerk.mountUserButton(userButtonDiv);
-  } else {
-    if (userButtonDiv) userButtonDiv.style.display = 'none';
-    if (authLinks) authLinks.style.display = 'block';
+  } catch (err) {
+    console.error("Clerk Init Error:", err);
   }
 });
 
