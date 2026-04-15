@@ -7,7 +7,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-<style>
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_YOUR_CLERK_PUBLISHABLE_KEY"
+  src="https://your-clerk-frontend-api-url.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript">
+</script>
+  <style>
 :root{
   --ink:#06070f;
   --ink2:#0a0c18;
@@ -273,8 +280,11 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
     <a href="#solutions" class="nav-a">Solutions</a>
     <a href="#pricing" class="nav-a">Pricing</a>
     <a href="#partnership" class="nav-a">Partnership</a>
-    <a href="#" class="nav-btn" onclick="openModal(event)">Deploy GPU Now →</a>
+   <div id="user-button"></div>
+  <div id="auth-links">
+    <a href="#" class="nav-btn" onclick="Clerk.openSignIn()">Sign In / Sign Up</a>
   </div>
+</div>
 </nav>
 
 <section>
@@ -783,7 +793,23 @@ async function apiPost(endpoint, data) {
     return { success: true, orderId: 'local_' + Date.now() };
   }
 }
+// --- CLERK INITIALIZATION ---
+window.addEventListener('load', async function () {
+  await Clerk.load();
 
+  const userButtonDiv = document.getElementById('user-button');
+  const authLinks = document.getElementById('auth-links');
+
+  if (Clerk.user) {
+    // User is logged in: Show the User Profile button and hide "Sign In"
+    if (authLinks) authLinks.style.display = 'none';
+    if (userButtonDiv) Clerk.mountUserButton(userButtonDiv);
+  } else {
+    // Not logged in: Show "Sign In"
+    if (userButtonDiv) userButtonDiv.style.display = 'none';
+    if (authLinks) authLinks.style.display = 'block';
+  }
+});
 // NAV scroll glow
 const mainNav = document.getElementById('mainNav');
 window.addEventListener('scroll', () => {
@@ -823,26 +849,42 @@ async function handleSubmit(e) {
   document.getElementById('m-wrap').style.display = 'none';
   document.getElementById('m-success').style.display = 'block';
 }
-
 async function handlePayment(e) {
   e.preventDefault();
+
+  // 1. Check if user is logged in before allowing payment
+  if (!Clerk.user) {
+    Clerk.openSignUp(); 
+    return;
+  }
+
   const btn = e.target.querySelector('button[type=submit]');
   const origText = btn.textContent;
-  btn.textContent = 'Opening Razorpay...'; btn.disabled = true;
-  const name = e.target.querySelectorAll('input')[0].value;
-  const email = e.target.querySelectorAll('input')[1].value;
+  btn.textContent = 'Opening Razorpay...'; 
+  btn.disabled = true;
+
+  // 2. Use Clerk Data for the order (Ensures credentials go to the right email)
+  const name = Clerk.user.fullName || e.target.querySelectorAll('input')[0].value;
+  const email = Clerk.user.primaryEmailAddress.emailAddress; 
   const company = e.target.querySelectorAll('input')[2].value;
+
   const amtINR = PLAN_PRICES_INR[_currentPlan] || (_currentAmount * 83);
-  const orderRes = await apiPost('/api/create-order', { plan: _currentPlan, amount: amtINR, name, email, company });
+  
+  // Create order on your Render backend
+  const orderRes = await apiPost('/api/create-order', { 
+    plan: _currentPlan, 
+    amount: amtINR, 
+    name, 
+    email, 
+    company 
+  });
+
   if (orderRes.mock || !orderRes.key) {
     btn.textContent = origText; btn.disabled = false;
     closePayModal();
-    const notice = document.createElement('div');
-    notice.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;background:#0f1120;border:1px solid rgba(0,229,255,.4);padding:36px 40px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 48px rgba(0,0,0,.8)';
-    notice.innerHTML = `<div style="font-family:'Space Mono',monospace;font-size:10px;color:#00e5ff;margin-bottom:12px;text-transform:uppercase;letter-spacing:.1em">Payment Gateway</div><h3 style="font-size:20px;font-weight:800;color:#dfe6f5;margin-bottom:10px">Almost there!</h3><p style="font-size:14px;color:#5a6a8a;line-height:1.7;margin-bottom:20px">Interested in the <strong style="color:#dfe6f5">${_currentPlan}</strong> plan? Email us directly:</p><a href="mailto:hello@nexuscompute.cloud?subject=Interested in ${_currentPlan}&body=Name: ${name}%0AEmail: ${email}" style="display:inline-block;background:#00e5ff;color:#000;font-weight:800;padding:12px 28px;font-size:14px;text-decoration:none;margin-bottom:14px">Email Us to Sign Up →</a><br><button onclick="this.parentElement.remove()" style="background:none;border:1px solid #28304a;color:#5a6a8a;padding:8px 20px;cursor:pointer;font-size:12px;margin-top:8px">Close</button>`;
-    document.body.appendChild(notice);
     return;
   }
+
   const options = {
     key: orderRes.key,
     order_id: orderRes.orderId,
@@ -851,21 +893,35 @@ async function handlePayment(e) {
     name: 'NexusCompute',
     description: _currentPlan + ' Plan',
     prefill: { name, email },
-    notes: { plan: _currentPlan, company },
+    notes: { 
+        plan: _currentPlan, 
+        clerkId: Clerk.user.id // Links the payment to the Clerk User ID
+    },
     theme: { color: '#00e5ff' },
     handler: function(response) {
-      apiPost('/api/verify-payment', { razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature, plan: _currentPlan, name, email });
+      // This sends data back to verify-payment in server.js on Render
+      apiPost('/api/verify-payment', { 
+        razorpay_payment_id: response.razorpay_payment_id, 
+        razorpay_order_id: response.razorpay_order_id, 
+        razorpay_signature: response.razorpay_signature, 
+        plan: _currentPlan, 
+        name, 
+        email 
+      });
       closePayModal();
       document.getElementById('pay-wrap').style.display = 'none';
       document.getElementById('pay-success').style.display = 'block';
     },
     modal: { ondismiss: function() { btn.textContent = origText; btn.disabled = false; } }
   };
+  
   try {
     const rzp = new Razorpay(options);
-    rzp.on('payment.failed', function(resp) { alert('Payment failed: ' + resp.error.description); btn.textContent = origText; btn.disabled = false; });
     rzp.open();
-  } catch(err) { alert('Could not load Razorpay. Please disable ad-blockers and try again.'); btn.textContent = origText; btn.disabled = false; }
+  } catch(err) { 
+    alert('Razorpay failed to load.'); 
+    btn.textContent = origText; btn.disabled = false; 
+  }
 }
 
 // PRICING TABS
