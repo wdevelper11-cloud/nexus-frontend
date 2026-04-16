@@ -1,6 +1,6 @@
 const API_BASE = window.NEXUS_API_BASE || 'https://nexus-backend1-1.onrender.com';
 
-const ADMIN_CLERK_ID = 'user_3COSZv72S5YK9yrCkO5BcNtmaxm';
+const ADMIN_CLERK_ID = 'user_3CRvVXAi2VqnrFmfOZ9d7Zgsj8k';
 const VIEW = {
   GUEST: 'GUEST',
   ENTERPRISE: 'ENTERPRISE',
