@@ -3,9 +3,17 @@ const API_BASE = window.NEXUS_API_BASE || 'https://nexus-backend1-1.onrender.com
 const ADMIN_CLERK_ID = 'user_3CRvVXAi2VqnrFmfOZ9d7Zgsj8k';
 const VIEW = {
   GUEST: 'GUEST',
-  ENTERPRISE: 'ENTERPRISE',
+  STANDARD: 'STANDARD',
+  ELITE: 'ELITE',
   ADMIN: 'ADMIN'
 };
+
+const ELITE_CLERK_IDS = (window.NEXUS_ELITE_IDS || '')
+  .split(',')
+  .map((id) => id.trim())
+  .filter(Boolean);
+
+let activeView = VIEW.GUEST;
 
 const PLAN_PRICES_USD = {
   'Automation Starter': 199,
@@ -79,17 +87,26 @@ window.addEventListener('load', async function () {
 });
 
 function setView(view) {
+  activeView = view;
   document.body.dataset.view = view;
+  if (typeof window.mountNexusDashboardByView === 'function') {
+    window.mountNexusDashboardByView(view);
+  }
 }
 
 async function routeIdentity(user) {
-  let currentView = VIEW.GUEST;
+  let currentView = VIEW.STANDARD;
+  const isEliteById = ELITE_CLERK_IDS.includes(user?.id);
+  const isEliteByMetadata = user?.publicMetadata?.tier === 'elite' || user?.unsafeMetadata?.tier === 'elite';
+
   if (user?.id === ADMIN_CLERK_ID) {
     currentView = VIEW.ADMIN;
-  } else if (user?.publicMetadata?.plan === 'enterprise' || user?.unsafeMetadata?.plan === 'enterprise') {
-    currentView = VIEW.ENTERPRISE;
+  } else if (isEliteById || isEliteByMetadata) {
+    currentView = VIEW.ELITE;
   }
+
   setView(currentView);
+
   if (currentView === VIEW.ADMIN) {
     await showAdminBriefing();
   }
@@ -101,11 +118,17 @@ async function showAdminBriefing() {
   const closeBtn = document.getElementById('admin-close');
   if (!overlay || !body) return;
 
+  overlay.style.display = 'flex';
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
+
   closeBtn?.addEventListener('click', () => {
-    overlay.classList.remove('open');
-    overlay.setAttribute('aria-hidden', 'true');
+    const adminOverlay = document.getElementById('admin-overlay');
+    if (!adminOverlay) return;
+    adminOverlay.classList.remove('open');
+    adminOverlay.setAttribute('aria-hidden', 'true');
+    adminOverlay.style.display = 'none';
+    document.body.style.pointerEvents = 'auto';
   }, { once: true });
 
   const defaultMsg = 'Good morning, Parth. Systems are 100% operational. All USD billing streams are healthy and no incidents require action.';
@@ -399,33 +422,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
       </div>
     </div>
     <div id="nf-right">
-      <div class="nf-rs">
-        <div class="nf-rs-title">Plans</div>
-        <div class="nf-pc nf-hot">
-          <div class="nf-pc-name">Automation Agency <span class="nf-pc-tag">Popular</span></div>
-          <div class="nf-pc-desc">Dedicated compute · n8n + Make ready</div>
-          <div class="nf-pc-price">$559 <span>/mo</span></div>
-          <button class="nf-pc-btn" onclick="nfClose();openPayment(null,'Automation Agency','559')">Get Started</button>
-        </div>
-        <div class="nf-pc">
-          <div class="nf-pc-name">Automation Starter</div>
-          <div class="nf-pc-desc">Shared cluster · 200K calls/mo</div>
-          <div class="nf-pc-price">$199 <span>/mo</span></div>
-          <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Automation Starter','199')">Select</button>
-        </div>
-        <div class="nf-pc">
-          <div class="nf-pc-name">Creative Pro</div>
-          <div class="nf-pc-desc">SDXL · FLUX · ComfyUI · Zero queue</div>
-          <div class="nf-pc-price">$559 <span>/mo</span></div>
-          <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Creative Pro','559')">Select</button>
-        </div>
-        <div class="nf-pc">
-          <div class="nf-pc-name">Creative Starter</div>
-          <div class="nf-pc-desc">Shared GPU · SDXL + FLUX</div>
-          <div class="nf-pc-price">$229 <span>/mo</span></div>
-          <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Creative Starter','229')">Select</button>
-        </div>
-      </div>
+      <div class="nf-rs" id="nf-dashboard-primary"></div>
       <div class="nf-rs">
         <div class="nf-rs-title">Platform</div>
         <div class="nf-stat-row"><span>Uptime</span><span class="nf-stat-val nf-a">99.9%</span></div>
@@ -437,7 +434,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
     </div>
   </div>
 </div>
-<div id="nf-fab-wrap">
+<div id="nf-fab-wrap" style="display:none">
   <div id="nf-fab-label">NexusFlow AI</div>
   <button id="nf-fab-btn" onclick="nfToggle()">🤖<div id="nf-fab-badge"></div></button>
 </div>`;
@@ -535,6 +532,55 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
     if(q.match(/compare|differ|vs|which/)) return `<b>Automation Engine</b> = LLM inference, n8n, Make, APIs. From $199/mo.<br><b>Creative Engine</b> = image/video generation, ComfyUI, SDXL, FLUX. From $229/mo.<br><br>Both include NexusFlow AI + setup.`;
     return `Tell me your workload — tools you use (n8n, ComfyUI, Make?), number of clients, and monthly AI spend. I'll recommend the exact right plan for you.`;
   }
+
+
+  function getPrimaryPanelMarkup(view) {
+    if (view === VIEW.ELITE) {
+      return `<div class="nf-rs-title">Elite Manager</div>
+        <div class="nf-pc nf-hot">
+          <div class="nf-pc-name">Performance Manager <span class="nf-pc-tag">Elite</span></div>
+          <div class="nf-pc-desc">Monitor fleet health, usage limits, and optimization opportunities.</div>
+          <button class="nf-pc-btn" onclick="nfQuick('Open my elite manager summary')">Open Manager</button>
+        </div>
+        <div class="nf-pc">
+          <div class="nf-pc-name">Priority Support</div>
+          <div class="nf-pc-desc">Escalate infra incidents directly to the manager queue.</div>
+          <button class="nf-pc-btn nf-ghost" onclick="window.location.href='mailto:hello@nexuscompute.cloud?subject=Elite%20Support'">Contact Support</button>
+        </div>`;
+    }
+
+    return `<div class="nf-rs-title">GPU List</div>
+      <div class="nf-pc nf-hot">
+        <div class="nf-pc-name">RTX 4090 <span class="nf-pc-tag">Popular</span></div>
+        <div class="nf-pc-desc">24GB VRAM · Best for ComfyUI and SDXL pipelines</div>
+        <div class="nf-pc-price">$1.49 <span>/hr</span></div>
+        <button class="nf-pc-btn" onclick="nfClose();openPayment(null,'Creative Pro','559')">Deploy</button>
+      </div>
+      <div class="nf-pc">
+        <div class="nf-pc-name">A100 80GB</div>
+        <div class="nf-pc-desc">High-throughput inference and fine-tuning</div>
+        <div class="nf-pc-price">$2.89 <span>/hr</span></div>
+        <button class="nf-pc-btn nf-ghost" onclick="nfQuick('Recommend an A100 workload plan')">Compare</button>
+      </div>
+      <div class="nf-pc">
+        <div class="nf-pc-name">H100</div>
+        <div class="nf-pc-desc">Enterprise-grade workloads and low-latency serving</div>
+        <div class="nf-pc-price">$4.99 <span>/hr</span></div>
+        <button class="nf-pc-btn nf-ghost" onclick="nfQuick('What should run on H100?')">Compare</button>
+      </div>`;
+  }
+
+  function mountDashboardByView(view) {
+    const panel = document.getElementById('nf-dashboard-primary');
+    const fabWrap = document.getElementById('nf-fab-wrap');
+    if (panel) panel.innerHTML = getPrimaryPanelMarkup(view);
+    if (fabWrap) {
+      fabWrap.style.display = view === VIEW.GUEST ? 'none' : 'flex';
+    }
+  }
+
+  window.mountNexusDashboardByView = mountDashboardByView;
+  mountDashboardByView(activeView);
 
   setTimeout(() => {
     const badge = document.getElementById('nf-fab-badge');
