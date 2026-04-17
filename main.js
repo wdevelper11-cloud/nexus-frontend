@@ -3,7 +3,8 @@ const API_BASE = window.NEXUS_API_BASE || 'https://nexus-backend1-1.onrender.com
 const ADMIN_CLERK_ID = 'user_3CRvVXAi2VqnrFmfOZ9d7Zgsj8k';
 const VIEW = {
   GUEST: 'GUEST',
-  STANDARD: 'STANDARD',
+  STARTER: 'STARTER',
+  POWER: 'POWER',
   ELITE: 'ELITE',
   ADMIN: 'ADMIN'
 };
@@ -14,6 +15,7 @@ const ELITE_CLERK_IDS = (window.NEXUS_ELITE_IDS || '')
   .filter(Boolean);
 
 let activeView = VIEW.GUEST;
+let activeTier = 'guest';
 
 const PLAN_PRICES_USD = {
   'Automation Starter': 199,
@@ -43,23 +45,45 @@ window.addEventListener('load', async function () {
       appearance: {
         baseTheme: 'dark',
         variables: {
-          colorPrimary: '#00e5ff',    // Cyan accents
-          colorBackground: '#0a0c18', // Slightly lighter dark for the modal
-          colorText: '#dfe6f5',       // Bright off-white text
-          colorTextSecondary: '#94a3b8', // Grey for secondary text
-          // This fixes the invisible icons:
+          colorPrimary: '#00e5ff',
+          colorBackground: '#0B0B0C',
+          colorText: '#ffffff',
+          colorTextSecondary: '#9defff',
           colorInputText: '#ffffff',
           colorActionLink: '#00e5ff'
         },
         elements: {
-          // Custom CSS to force icons to be visible
+          rootBox: {
+            backgroundColor: '#0B0B0C',
+            color: '#ffffff'
+          },
+          card: {
+            backgroundColor: '#0B0B0C',
+            color: '#ffffff'
+          },
+          main: {
+            backgroundColor: '#0B0B0C',
+            color: '#ffffff',
+            display: 'flex',
+            justifyContent: 'center',
+            textAlign: 'center'
+          },
+          headerTitle: {
+            color: '#00e5ff',
+            textAlign: 'center'
+          },
+          headerSubtitle: {
+            color: '#ffffff',
+            textAlign: 'center'
+          },
+          formFieldLabel: {
+            color: '#9defff'
+          },
           userButtonPopoverActionButtonIcon: {
-            color: '#dfe6f5',
+            color: '#ffffff',
             opacity: '0.8'
           },
-          userButtonPopoverFooter: {
-            display: 'none' // Cleans up the "Powered by Clerk" if you want
-          }
+          userButtonPopoverFooter: { display: 'none' }
         }
       }
     });
@@ -79,7 +103,7 @@ window.addEventListener('load', async function () {
     } else {
       if (userButtonDiv) userButtonDiv.style.display = 'none';
       if (authLinks) authLinks.style.display = 'block';
-      setView(VIEW.GUEST);
+      syncDashboardView(null);
     }
   } catch (err) {
     console.error("Clerk Init Error:", err);
@@ -94,8 +118,49 @@ function setView(view) {
   }
 }
 
+function getTierFromUser(user) {
+  const rawTier = String(
+    user?.publicMetadata?.tier ||
+    user?.unsafeMetadata?.tier ||
+    user?.publicMetadata?.plan ||
+    user?.unsafeMetadata?.plan ||
+    ''
+  ).toLowerCase().trim();
+
+  if (!rawTier) return 'guest';
+  if (rawTier.includes('agency')) return 'agency';
+  if (rawTier.includes('pro')) return 'pro';
+  if (rawTier.includes('starter')) return 'starter';
+  if (rawTier.includes('elite')) return 'elite';
+  return 'starter';
+}
+
+function syncDashboardView(user) {
+  const isEliteById = user?.id && ELITE_CLERK_IDS.includes(user.id);
+  const isEliteByMetadata = user?.publicMetadata?.tier === 'elite' || user?.unsafeMetadata?.tier === 'elite';
+  const tier = getTierFromUser(user);
+  activeTier = (isEliteById || isEliteByMetadata) ? 'elite' : tier;
+
+  if (!user) {
+    setView(VIEW.GUEST);
+    return;
+  }
+
+  if (user.id === ADMIN_CLERK_ID) {
+    setView(VIEW.ADMIN);
+    return;
+  }
+
+  if (activeTier === 'agency' || activeTier === 'pro' || activeTier === 'elite') {
+    setView(VIEW.POWER);
+    return;
+  }
+
+  setView(VIEW.STARTER);
+}
+
 async function routeIdentity(user) {
-  let currentView = VIEW.STANDARD;
+  let currentView = VIEW.STARTER;
   const isEliteById = ELITE_CLERK_IDS.includes(user?.id);
   const isEliteByMetadata = user?.publicMetadata?.tier === 'elite' || user?.unsafeMetadata?.tier === 'elite';
 
@@ -105,7 +170,7 @@ async function routeIdentity(user) {
     currentView = VIEW.ELITE;
   }
 
-  setView(currentView);
+  syncDashboardView(user);
 
   if (currentView === VIEW.ADMIN) {
     await showAdminBriefing();
@@ -122,16 +187,19 @@ async function showAdminBriefing() {
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
 
-  closeBtn?.addEventListener('click', () => {
+  const defaultMsg = 'Good morning, Parth. Systems are 100% operational. All USD billing streams are healthy and no incidents require action.';
+  const closeAdminOverlay = () => {
     const adminOverlay = document.getElementById('admin-overlay');
     if (!adminOverlay) return;
     adminOverlay.classList.remove('open');
     adminOverlay.setAttribute('aria-hidden', 'true');
     adminOverlay.style.display = 'none';
     document.body.style.pointerEvents = 'auto';
-  }, { once: true });
+    document.body.style.overflow = '';
+  };
 
-  const defaultMsg = 'Good morning, Parth. Systems are 100% operational. All USD billing streams are healthy and no incidents require action.';
+  closeBtn?.addEventListener('click', closeAdminOverlay, { once: true });
+
   try {
     const res = await fetch(`${API_BASE}/api/admin/summary`);
     const data = await res.json();
@@ -549,24 +617,45 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
         </div>`;
     }
 
-    return `<div class="nf-rs-title">GPU List</div>
+    if (view === VIEW.STARTER) {
+      return `<div class="nf-rs-title">Starter Support</div>
       <div class="nf-pc nf-hot">
-        <div class="nf-pc-name">RTX 4090 <span class="nf-pc-tag">Popular</span></div>
-        <div class="nf-pc-desc">24GB VRAM · Best for ComfyUI and SDXL pipelines</div>
-        <div class="nf-pc-price">$1.49 <span>/hr</span></div>
-        <button class="nf-pc-btn" onclick="nfClose();openPayment(null,'Creative Pro','559')">Deploy</button>
+        <div class="nf-pc-name">Automated Email Support <span class="nf-pc-tag">Starter</span></div>
+        <div class="nf-pc-desc">Starter plans include automated support workflows and email assistance for setup + billing.</div>
+        <div class="nf-pc-price">hello@nexuscompute.cloud <span>/24h response</span></div>
+        <button class="nf-pc-btn nf-ghost" onclick="window.location.href='mailto:hello@nexuscompute.cloud?subject=Starter%20Support'">Email Support</button>
       </div>
       <div class="nf-pc">
-        <div class="nf-pc-name">A100 80GB</div>
-        <div class="nf-pc-desc">High-throughput inference and fine-tuning</div>
-        <div class="nf-pc-price">$2.89 <span>/hr</span></div>
-        <button class="nf-pc-btn nf-ghost" onclick="nfQuick('Recommend an A100 workload plan')">Compare</button>
+        <div class="nf-pc-name">Upgrade Path</div>
+        <div class="nf-pc-desc">Need AI assistant access and priority workflows? Upgrade to Agency or Pro anytime.</div>
+        <button class="nf-pc-btn" onclick="nfClose();document.getElementById('pricing').scrollIntoView({behavior:'smooth'});">View Tiers</button>
+      </div>`;
+    }
+
+    return `<div class="nf-rs-title">Monthly Tiers</div>
+      <div class="nf-pc nf-hot">
+        <div class="nf-pc-name">Automation Starter <span class="nf-pc-tag">$199/mo</span></div>
+        <div class="nf-pc-desc">Entry track for automation workloads and guided setup.</div>
+        <div class="nf-pc-price">$199 <span>/mo</span></div>
+        <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Automation Starter','199')">Choose Starter</button>
       </div>
       <div class="nf-pc">
-        <div class="nf-pc-name">H100</div>
-        <div class="nf-pc-desc">Enterprise-grade workloads and low-latency serving</div>
-        <div class="nf-pc-price">$4.99 <span>/hr</span></div>
-        <button class="nf-pc-btn nf-ghost" onclick="nfQuick('What should run on H100?')">Compare</button>
+        <div class="nf-pc-name">Automation Agency <span class="nf-pc-tag">$559/mo</span></div>
+        <div class="nf-pc-desc">Agency-grade automation operations with priority support.</div>
+        <div class="nf-pc-price">$559 <span>/mo</span></div>
+        <button class="nf-pc-btn" onclick="nfClose();openPayment(null,'Automation Agency','559')">Choose Agency</button>
+      </div>
+      <div class="nf-pc">
+        <div class="nf-pc-name">Creative Starter <span class="nf-pc-tag">$229/mo</span></div>
+        <div class="nf-pc-desc">Creative workloads with managed setup and email support.</div>
+        <div class="nf-pc-price">$229 <span>/mo</span></div>
+        <button class="nf-pc-btn nf-ghost" onclick="nfClose();openPayment(null,'Creative Starter','229')">Choose Starter</button>
+      </div>
+      <div class="nf-pc">
+        <div class="nf-pc-name">Creative Pro <span class="nf-pc-tag">$559/mo</span></div>
+        <div class="nf-pc-desc">Pro creative pipeline with full NexusFlow AI access.</div>
+        <div class="nf-pc-price">$559 <span>/mo</span></div>
+        <button class="nf-pc-btn" onclick="nfClose();openPayment(null,'Creative Pro','559')">Choose Pro</button>
       </div>`;
   }
 
@@ -575,7 +664,8 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
     const fabWrap = document.getElementById('nf-fab-wrap');
     if (panel) panel.innerHTML = getPrimaryPanelMarkup(view);
     if (fabWrap) {
-      fabWrap.style.display = view === VIEW.GUEST ? 'none' : 'flex';
+      const canShowBubble = activeTier === 'agency' || activeTier === 'pro' || view === VIEW.ADMIN || view === VIEW.ELITE;
+      fabWrap.style.display = canShowBubble ? 'flex' : 'none';
     }
   }
 
