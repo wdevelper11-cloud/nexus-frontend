@@ -269,4 +269,5 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
 .admin-overlay.open{opacity:1;pointer-events:all}
 .admin-overlay-card{position:relative;max-width:620px;width:100%;padding:28px;border:1px solid var(--cyan);background:var(--ink2);box-shadow:0 0 40px var(--cyan-g)}
 .admin-close{position:absolute;right:14px;top:10px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;z-index:10000;pointer-events:auto}
+.admin-overlay-close{z-index:100000;pointer-events:auto}
 .admin-close:hover{color:var(--white)}
