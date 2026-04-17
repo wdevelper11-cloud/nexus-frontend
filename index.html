@@ -142,7 +142,7 @@ nav.scrolled .nav-btn{box-shadow:0 0 20px var(--cyan-g)}
 .ptab.active.creative{background:var(--lime);color:#000}
 .ppanels{margin-top:20px}
 .ppanel{display:none}
-.ppanel.active{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--b1);border:1px solid var(--b1)}
+.ppanel.active{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--b1);border:1px solid var(--b1)}
 .pc{background:var(--ink2);padding:36px 28px;position:relative;transition:background .25s}
 .pc:hover{background:var(--ink3)}
 .pc.hot{background:var(--ink3);z-index:2}
@@ -280,7 +280,7 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
     <a href="#partnership" class="nav-a">Partnership</a>
    <div id="user-button"></div>
   <div id="auth-links">
-    <a href="#" class="nav-btn" onclick="Clerk.openSignIn()">Sign In / Sign Up</a>
+    <a href="#" class="nav-btn" onclick="Clerk.openSignIn({ signInUrl: '/', afterSignInUrl: '/', afterSignUpUrl: '/' })">Sign In / Sign Up</a>
   </div>
 </div>
 </nav>
@@ -491,32 +491,6 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
           </a>
         </div>
 
-        <div class="pc auto sr">
-          <div class="p-tier">Enterprise</div>
-          <div class="p-amt" style="font-size:38px;line-height:1.2;padding-top:8px">
-            Custom
-          </div>
-          <div class="p-period">tailored pricing</div>
-          <div class="p-div"></div>
-
-          <ul class="p-feats">
-            <li>Multi-node provisioning</li>
-            <li>Fine-tuning infrastructure</li>
-            <li>White-label API</li>
-            <li>Custom SLA + uptime commitment</li>
-            <li>Dedicated account management</li>
-            <li>Volume pricing with clear unit economics</li>
-          </ul>
-
-          <div class="p-note">
-            15+ clients or SaaS products with high inference volume. Let's build a custom plan.
-          </div>
-
-          <a href="#" class="pbtn ghost" onclick="openModal(event)">
-            Contact Us →
-          </a>
-        </div>
-
       </div>
 
       <div class="ppanel" id="panel-creative">
@@ -571,32 +545,6 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
           <a href="#" class="pbtn cs"
              onclick="openPayment(event,'Creative Pro','559')">
             Deploy Instantly →
-          </a>
-        </div>
-
-        <div class="pc creative sr">
-          <div class="p-tier">Enterprise</div>
-          <div class="p-amt" style="font-size:38px;line-height:1.2;padding-top:8px">
-            Custom
-          </div>
-          <div class="p-period">tailored pricing</div>
-          <div class="p-div"></div>
-
-          <ul class="p-feats">
-            <li>Multi-GPU creative provisioning</li>
-            <li>Custom model deployment</li>
-            <li>White-label creative API</li>
-            <li>Bulk generation SLA</li>
-            <li>Dedicated pipeline management</li>
-            <li>Volume pricing for studios + platforms</li>
-          </ul>
-
-          <div class="p-note">
-            For AI studios, content platforms, and GenAI companies with serious throughput requirements.
-          </div>
-
-          <a href="#" class="pbtn ghost" onclick="openModal(event)">
-            Contact Us →
           </a>
         </div>
 
@@ -796,25 +744,40 @@ async function apiPost(endpoint, data) {
 window.addEventListener('load', async function () {
   try {
     await Clerk.load({
+      signInUrl: '/',
+      signUpUrl: '/',
+      afterSignInUrl: '/',
+      afterSignUpUrl: '/',
       appearance: {
         baseTheme: 'dark',
         variables: {
-          colorPrimary: '#00e5ff',    // Cyan accents
-          colorBackground: '#0a0c18', // Slightly lighter dark for the modal
-          colorText: '#dfe6f5',       // Bright off-white text
-          colorTextSecondary: '#94a3b8', // Grey for secondary text
-          // This fixes the invisible icons:
+          colorInputBackground: '#1d1d1f',
           colorInputText: '#ffffff',
+          colorText: '#ffffff',
+          colorPrimary: '#00e5ff',
+          colorBackground: '#0a0c18',
+          colorTextSecondary: '#94a3b8',
           colorActionLink: '#00e5ff'
         },
         elements: {
-          // Custom CSS to force icons to be visible
+          card: {
+            textAlign: 'center',
+            margin: 'auto'
+          },
+          headerTitle: {
+            textAlign: 'center',
+            margin: 'auto'
+          },
+          headerSubtitle: {
+            textAlign: 'center',
+            margin: 'auto'
+          },
           userButtonPopoverActionButtonIcon: {
             color: '#dfe6f5',
             opacity: '0.8'
           },
           userButtonPopoverFooter: {
-            display: 'none' // Cleans up the "Powered by Clerk" if you want
+            display: 'none'
           }
         }
       }
@@ -884,7 +847,7 @@ async function handlePayment(e) {
 
   // 1. Safety Check: Only allow if logged in
   if (!window.Clerk || !window.Clerk.user) {
-    window.Clerk.openSignUp(); 
+    window.Clerk.openSignUp({ signUpUrl: '/', afterSignUpUrl: '/', afterSignInUrl: '/' }); 
     return;
   }
 
@@ -980,7 +943,8 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 #nf-fab-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#ff3b5c;border-radius:50%;border:2px solid #06070f;animation:nfBlink 2s ease infinite;display:none}
 #nf-fab-label{background:#0a0c18;border:1px solid rgba(198,255,0,.3);font-family:'Space Mono',monospace;font-size:10px;color:#c6ff00;padding:5px 12px;letter-spacing:.06em;white-space:nowrap;opacity:0;transform:translateX(8px);transition:opacity .2s,transform .2s;pointer-events:none}
 #nf-fab-label.nf-show{opacity:1;transform:translateX(0)}
-#nf-overlay{position:fixed;inset:0;z-index:8999;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:flex-end;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease}
+#nf-overlay{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:flex-end;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.admin-overlay{z-index:999999;pointer-events:auto}
 #nf-overlay.nf-open{opacity:1;pointer-events:all}
 #nf-dashboard{width:920px;max-width:calc(100vw - 40px);height:540px;max-height:calc(100vh - 100px);background:#0a0c18;border:1px solid rgba(198,255,0,.2);border-radius:16px;display:grid;grid-template-columns:185px 1fr 205px;overflow:hidden;transform:translateY(24px);opacity:0;transition:transform .28s ease,opacity .28s ease}
 #nf-overlay.nf-open #nf-dashboard{transform:translateY(0);opacity:1}
@@ -1009,6 +973,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 .nf-ch-clearbtn{background:transparent;border:1px solid #1a1e32;color:#5a6a8a;border-radius:7px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
 .nf-ch-clearbtn:hover{color:#dfe6f5;border-color:#5a6a8a}
 .nf-ch-close{background:#ff3b5c;border:none;color:#fff;font-size:14px;cursor:pointer;line-height:1;padding:5px 9px;border-radius:6px;font-weight:700;transition:background .15s}
+.admin-overlay-close{z-index:999999;pointer-events:auto}
 .nf-ch-close:hover{background:#ff1f45}
 #nf-msgs{flex:1;padding:14px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1a1e32 transparent}
 .nfm{display:flex;gap:9px;animation:nfFadeUp .25s ease}
@@ -1065,7 +1030,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
   document.head.appendChild(style);
 
   const html = `
-<div id="nf-overlay" onclick="nfOverlayClick(event)">
+<div id="nf-overlay" class="admin-overlay" onclick="nfOverlayClick(event)">
   <div id="nf-dashboard">
     <div id="nf-sidebar">
       <div class="nf-sidebar-logo"><div class="nf-logo-dot"></div>NexusFlow AI</div>
@@ -1095,7 +1060,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
         </div>
         <div class="nf-ch-actions">
           <button class="nf-ch-clearbtn" onclick="nfClearChat()">Clear</button>
-          <button class="nf-ch-close" onclick="nfClose()">✕ Close</button>
+          <button class="nf-ch-close admin-overlay-close" onclick="closeAdminOverlay()">✕ Close</button>
         </div>
       </div>
       <div id="nf-msgs">
@@ -1163,11 +1128,19 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 </div>`;
 
   document.body.insertAdjacentHTML('beforeend', html);
+  document.getElementById('nf-overlay').style.display = 'none';
 
   window.nfToggle = function() {
     const o = document.getElementById('nf-overlay');
     const fab = document.getElementById('nf-fab-btn');
     o.classList.toggle('nf-open');
+    if (o.classList.contains('nf-open')) {
+      o.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    } else {
+      o.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
     fab.classList.toggle('nf-hidden', o.classList.contains('nf-open'));
     document.getElementById('nf-fab-badge').style.display = 'none';
     if(o.classList.contains('nf-open')) {
@@ -1175,9 +1148,16 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
     }
   };
 
-  window.nfClose = function() {
-    document.getElementById('nf-overlay').classList.remove('nf-open');
+  window.closeAdminOverlay = function() {
+    const overlay = document.getElementById('nf-overlay');
+    overlay.classList.remove('nf-open');
+    overlay.style.display = 'none';
+    document.body.style.overflow = 'auto';
     document.getElementById('nf-fab-btn').classList.remove('nf-hidden');
+  };
+
+  window.nfClose = function() {
+    closeAdminOverlay();
   };
 
   window.nfOverlayClick = function(e) {
