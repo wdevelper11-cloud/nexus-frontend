@@ -449,7 +449,7 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
             <li>Includes up to 120 compute hours/month</li>
             <li>Standard LLM library — small + mid models</li>
             <li>OpenAI-compatible API endpoint</li>
-            <li>NexusFlow AI — basic monitoring</li>
+            <li>Nexus AI Manager — basic monitoring</li>
             <li>Email support · Setup included</li>
           </ul>
 
@@ -475,7 +475,7 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
             <li>Includes up to 300 compute hours/month</li>
             <li>Full LLM library — large models + custom configs</li>
             <li>Per-client workspace + usage breakdown</li>
-            <li>NexusFlow AI — full optimization suite</li>
+            <li>Nexus AI Manager — full optimization suite</li>
             <li>Direct Slack support line</li>
             <li>n8n + Make.com starter templates included</li>
             <li>24-hour setup guarantee</li>
@@ -506,7 +506,7 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
             <li>Stable Diffusion XL + FLUX support</li>
             <li>ComfyUI + A1111 compatible</li>
             <li>Includes up to 150 GPU hours/month</li>
-            <li>NexusFlow AI — basic monitoring</li>
+            <li>Nexus AI Manager — basic monitoring</li>
             <li>Email support · Setup included</li>
           </ul>
 
@@ -532,7 +532,7 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
             <li>Full model library — SDXL, FLUX, custom LoRA</li>
             <li>Batch generation — 200+ images per session</li>
             <li>Video generation pipeline support</li>
-            <li>NexusFlow AI — full optimization suite</li>
+            <li>Nexus AI Manager — full optimization suite</li>
             <li>Direct Slack support line</li>
             <li>ComfyUI workflow templates included</li>
             <li>24-hour setup guarantee</li>
@@ -569,11 +569,11 @@ footer{border-top:1px solid var(--b1);padding:28px 32px}
     <div class="nf-section">
       <div>
         <div class="nf-badge sr"><div class="nf-badge-dot"></div>Included on all plans</div>
-        <h2 class="sh2 sr">Meet NexusFlow AI.</h2>
+        <h2 class="sh2 sr">Meet Nexus AI Manager.</h2>
         <p class="sp sr" style="margin-bottom:16px">Your AI infrastructure copilot.</p>
         <div class="nf-power sr">Built to replace hours of manual setup and debugging.</div>
-        <p class="nf-body sr">Every account includes NexusFlow AI — an intelligent assistant that helps you choose the right GPU, optimize costs, and answer infrastructure questions instantly. Available on all plans at no extra cost.</p>
-        <a href="#" class="nf-btn sr" onclick="event.preventDefault();nfToggle()">Chat with NexusFlow AI →</a>
+        <p class="nf-body sr">Every account includes Nexus AI Manager — an intelligent assistant that helps you choose the right GPU, optimize costs, and answer infrastructure questions instantly. Available on all plans at no extra cost.</p>
+        <a href="#" id="nf-entry-btn" class="nf-btn sr" title="Open Nexus AI Manager" onclick="event.preventDefault();nfToggle()">Chat with Nexus AI Manager →</a>
       </div>
       <div class="nf-visual sr">
         <div class="nf-cap">
@@ -739,6 +739,35 @@ async function apiPost(endpoint, data) {
     return { success: true, orderId: 'local_' + Date.now() };
   }
 }
+const ALLOWED_MANAGER_TIERS = new Set(['agency', 'pro']);
+
+function getSubscriptionTier(user) {
+  if (!user) return 'guest';
+  const rawTier = user?.publicMetadata?.subscription_tier ?? user?.unsafeMetadata?.subscription_tier ?? user?.privateMetadata?.subscription_tier;
+  return String(rawTier || 'guest').trim().toLowerCase();
+}
+
+function hasManagerAccess(user) {
+  return ALLOWED_MANAGER_TIERS.has(getSubscriptionTier(user));
+}
+
+function syncManagerVisibility(user) {
+  const canAccessManager = hasManagerAccess(user);
+  const fabWrap = document.getElementById('nf-fab-wrap');
+  const entryBtn = document.getElementById('nf-entry-btn');
+  if (fabWrap) fabWrap.style.display = canAccessManager ? 'flex' : 'none';
+  if (entryBtn) entryBtn.style.display = canAccessManager ? 'inline-flex' : 'none';
+
+  if (!canAccessManager) {
+    const overlay = document.getElementById('nf-overlay');
+    if (overlay) {
+      overlay.classList.remove('nf-open');
+      overlay.style.display = 'none';
+    }
+    document.body.style.overflow = 'auto';
+  }
+}
+
 // --- CLERK INITIALIZATION ---
 // --- CLERK INITIALIZATION (FIXES DOUBLE AVATAR + INVISIBLE ICONS) ---
 window.addEventListener('load', async function () {
@@ -762,15 +791,37 @@ window.addEventListener('load', async function () {
         elements: {
           card: {
             textAlign: 'center',
-            margin: 'auto'
+            margin: 'auto',
+            backgroundColor: '#000000',
+            color: '#ffffff',
+            border: '1px solid #2f3446'
+          },
+          modalContent: {
+            backgroundColor: '#000000',
+            color: '#ffffff',
+            textAlign: 'center'
+          },
+          modalBackdrop: {
+            backgroundColor: 'rgba(0, 0, 0, 0.88)'
+          },
+          formButtonPrimary: {
+            backgroundColor: '#00e5ff',
+            color: '#000000'
+          },
+          formFieldInput: {
+            backgroundColor: '#111111',
+            color: '#ffffff',
+            borderColor: '#2f3446'
           },
           headerTitle: {
             textAlign: 'center',
-            margin: 'auto'
+            margin: 'auto',
+            color: '#ffffff'
           },
           headerSubtitle: {
             textAlign: 'center',
-            margin: 'auto'
+            margin: 'auto',
+            color: '#ffffff'
           },
           userButtonPopoverActionButtonIcon: {
             color: '#dfe6f5',
@@ -793,10 +844,12 @@ window.addEventListener('load', async function () {
         userButtonDiv.innerHTML = ''; 
         Clerk.mountUserButton(userButtonDiv);
       }
+      syncManagerVisibility(Clerk.user);
       console.log("NexusCompute: Identity Verified");
     } else {
       if (userButtonDiv) userButtonDiv.style.display = 'none';
       if (authLinks) authLinks.style.display = 'block';
+      syncManagerVisibility(null);
     }
   } catch (err) {
     console.error("Clerk Init Error:", err);
@@ -931,7 +984,7 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold: .07, rootMargin: '0px 0px -24px 0px' });
 document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 
-// ── NEXUSFLOW AI — FAB + 3-PANEL DASHBOARD ──
+// ── NEXUS AI MANAGER — FAB + 3-PANEL DASHBOARD ──
 (function() {
   const nfHistory = [];
 
@@ -973,7 +1026,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 .nf-ch-clearbtn{background:transparent;border:1px solid #1a1e32;color:#5a6a8a;border-radius:7px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
 .nf-ch-clearbtn:hover{color:#dfe6f5;border-color:#5a6a8a}
 .nf-ch-close{background:#ff3b5c;border:none;color:#fff;font-size:14px;cursor:pointer;line-height:1;padding:5px 9px;border-radius:6px;font-weight:700;transition:background .15s}
-.admin-overlay-close{z-index:999999;pointer-events:auto}
+.admin-overlay-close{position:relative;z-index:999999;pointer-events:auto}
 .nf-ch-close:hover{background:#ff1f45}
 #nf-msgs{flex:1;padding:14px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1a1e32 transparent}
 .nfm{display:flex;gap:9px;animation:nfFadeUp .25s ease}
@@ -1033,7 +1086,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 <div id="nf-overlay" class="admin-overlay" onclick="nfOverlayClick(event)">
   <div id="nf-dashboard">
     <div id="nf-sidebar">
-      <div class="nf-sidebar-logo"><div class="nf-logo-dot"></div>NexusFlow AI</div>
+      <div class="nf-sidebar-logo"><div class="nf-logo-dot"></div>Nexus AI Manager</div>
       <div class="nf-sec-label">Navigation</div>
       <a class="nf-nav-item nf-active" href="#" onclick="nfClose()">💬 AI Assistant</a>
       <a class="nf-nav-item" href="#pricing" onclick="nfClose()">💳 Plans & Pricing</a>
@@ -1043,7 +1096,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
       <a class="nf-nav-item" href="mailto:hello@nexuscompute.cloud">📧 Billing Support</a>
       <a class="nf-nav-item" href="mailto:hello@nexuscompute.cloud">⚙️ Settings</a>
       <div class="nf-plan-widget">
-        <div class="nf-pw-label">NexusFlow Status</div>
+        <div class="nf-pw-label">Nexus AI Manager: Active | Monitoring 24/7</div>
         <div class="nf-pw-name"><div class="nf-pw-dot"></div>AI Active</div>
         <div class="nf-pw-bar"><div class="nf-pw-fill"></div></div>
         <div class="nf-pw-meta">Powered by real AI</div>
@@ -1054,7 +1107,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
         <div class="nf-ch-info">
           <div class="nf-ch-av">⚡</div>
           <div>
-            <div class="nf-ch-name">NexusFlow AI</div>
+            <div class="nf-ch-name">Nexus AI Manager</div>
             <div class="nf-ch-sub"><div class="nf-ch-subdot"></div>Infrastructure intelligence · Always active</div>
           </div>
         </div>
@@ -1067,8 +1120,8 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
         <div class="nfm ai">
           <div class="nfm-av">⚡</div>
           <div class="nfm-body">
-            <div class="nfm-from">NexusFlow AI</div>
-            <div class="nfm-b">Hey! I'm your NexusFlow AI assistant — I help you choose the right plan, answer infrastructure questions, and get you running in under 60 seconds. What are you building?</div>
+            <div class="nfm-from">Nexus AI Manager</div>
+            <div class="nfm-b">Hey! I'm your Nexus AI Manager assistant — I help you choose the right plan, answer infrastructure questions, and get you running in under 60 seconds. What are you building?</div>
           </div>
         </div>
       </div>
@@ -1123,14 +1176,17 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
   </div>
 </div>
 <div id="nf-fab-wrap">
-  <div id="nf-fab-label">NexusFlow AI</div>
-  <button id="nf-fab-btn" onclick="nfToggle()">🤖<div id="nf-fab-badge"></div></button>
+  <div id="nf-fab-label">Nexus AI Manager</div>
+  <button id="nf-fab-btn" title="Open Nexus AI Manager" onclick="nfToggle()">🤖<div id="nf-fab-badge"></div></button>
 </div>`;
 
   document.body.insertAdjacentHTML('beforeend', html);
   document.getElementById('nf-overlay').style.display = 'none';
+  const initialFabWrap = document.getElementById('nf-fab-wrap');
+  if (initialFabWrap) initialFabWrap.style.display = 'none';
 
   window.nfToggle = function() {
+    if (!hasManagerAccess(window.Clerk && window.Clerk.user)) return;
     const o = document.getElementById('nf-overlay');
     const fab = document.getElementById('nf-fab-btn');
     o.classList.toggle('nf-open');
@@ -1150,6 +1206,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 
   window.closeAdminOverlay = function() {
     const overlay = document.getElementById('nf-overlay');
+    if (!overlay) return;
     overlay.classList.remove('nf-open');
     overlay.style.display = 'none';
     document.body.style.overflow = 'auto';
@@ -1166,7 +1223,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 
   window.nfClearChat = function() {
     nfHistory.length = 0;
-    document.getElementById('nf-msgs').innerHTML = `<div class="nfm ai"><div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">NexusFlow AI</div><div class="nfm-b">Chat cleared. What can I help you with?</div></div></div>`;
+    document.getElementById('nf-msgs').innerHTML = `<div class="nfm ai"><div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">Nexus AI Manager</div><div class="nfm-b">Chat cleared. What can I help you with?</div></div></div>`;
     document.getElementById('nf-chips').style.display = 'flex';
   };
 
@@ -1193,7 +1250,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
     const typingDiv = document.createElement('div');
     typingDiv.className = 'nfm ai';
     typingDiv.id = 'nf-typing';
-    typingDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">NexusFlow AI</div><div class="nf-typing-dots"><span></span><span></span><span></span></div></div>`;
+    typingDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">Nexus AI Manager</div><div class="nf-typing-dots"><span></span><span></span><span></span></div></div>`;
     msgs.appendChild(typingDiv);
     msgs.scrollTop = msgs.scrollHeight;
 
@@ -1211,7 +1268,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
       const t = document.getElementById('nf-typing'); if(t) t.remove();
       const aiDiv = document.createElement('div');
       aiDiv.className = 'nfm ai';
-      aiDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">NexusFlow AI</div><div class="nfm-b">${reply}</div></div>`;
+      aiDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">Nexus AI Manager</div><div class="nfm-b">${reply}</div></div>`;
       msgs.appendChild(aiDiv);
       msgs.scrollTop = msgs.scrollHeight;
     } catch(err) {
@@ -1219,7 +1276,7 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
       const reply = nfFallback(text);
       const aiDiv = document.createElement('div');
       aiDiv.className = 'nfm ai';
-      aiDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">NexusFlow AI</div><div class="nfm-b">${reply}</div></div>`;
+      aiDiv.innerHTML = `<div class="nfm-av">⚡</div><div class="nfm-body"><div class="nfm-from">Nexus AI Manager</div><div class="nfm-b">${reply}</div></div>`;
       msgs.appendChild(aiDiv);
       msgs.scrollTop = msgs.scrollHeight;
     }
@@ -1228,13 +1285,15 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
   function nfFallback(q) {
     q = q.toLowerCase();
     if(q.match(/slow|lag|latency/)) return `<b>Bottleneck detected.</b><br>Most common fix: switch fp32 → fp16 for 40% speedup. Which model are you running?`;
-    if(q.match(/cost|price|plan|cheap/)) return `<b>Plans start at $199/mo</b> (Automation Starter) up to $559/mo for dedicated compute. All include setup + NexusFlow AI. Which workload are you running?`;
+    if(q.match(/cost|price|plan|cheap/)) return `<b>Plans start at $199/mo</b> (Automation Starter) up to $559/mo for dedicated compute. All include setup + Nexus AI Manager. Which workload are you running?`;
     if(q.match(/n8n|make|zapier|agency|automat/)) return `<b>Automation Agency at $559/mo</b> is built for you — dedicated compute, n8n + Make.com templates, per-client tracking, Slack support. Live in 24 hours.`;
     if(q.match(/comfy|stable|sdxl|flux|image|creat/)) return `<b>Creative Pro at $559/mo</b> — zero queue, SDXL + FLUX + ComfyUI fully supported, batch 200+ images, dedicated GPU.`;
     if(q.match(/setup|start|how|begin|work/)) return `Simple: <b>1)</b> Pick a plan → <b>2)</b> Pay via Razorpay (30 sec) → <b>3)</b> SSH credentials land in your inbox in under 60 seconds. Zero DevOps required.`;
-    if(q.match(/compare|differ|vs|which/)) return `<b>Automation Engine</b> = LLM inference, n8n, Make, APIs. From $199/mo.<br><b>Creative Engine</b> = image/video generation, ComfyUI, SDXL, FLUX. From $229/mo.<br><br>Both include NexusFlow AI + setup.`;
+    if(q.match(/compare|differ|vs|which/)) return `<b>Automation Engine</b> = LLM inference, n8n, Make, APIs. From $199/mo.<br><b>Creative Engine</b> = image/video generation, ComfyUI, SDXL, FLUX. From $229/mo.<br><br>Both include Nexus AI Manager + setup.`;
     return `Tell me your workload — tools you use (n8n, ComfyUI, Make?), number of clients, and monthly AI spend. I'll recommend the exact right plan for you.`;
   }
+
+  syncManagerVisibility(window.Clerk && window.Clerk.user ? window.Clerk.user : null);
 
   setTimeout(() => {
     const badge = document.getElementById('nf-fab-badge');
